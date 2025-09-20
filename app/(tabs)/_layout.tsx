@@ -1,14 +1,15 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+import { Colors } from "@/constants/Colors"
 
 export default function TabsLayout() {
     return (
         <Tabs
             screenOptions={{
-                tabBarActiveTintColor: "#007AFF",
-                tabBarInactiveTintColor: "gray",
+                tabBarInactiveTintColor: Colors.white,
+                tabBarActiveTintColor: Colors.white,
                 tabBarStyle: {
-                    backgroundColor: "#d9d9d9",
+                    backgroundColor: Colors.primary,
                     borderTopWidth: 1,
                     borderTopColor: "#eee",
                     height: 60,
@@ -22,9 +23,9 @@ export default function TabsLayout() {
                 name="home/index"
                 options={{
                     title: "Home",
-                    tabBarIcon: ({ color, size }) => (
+                    tabBarIcon: ({ color, size, focused }) => (
                         <Ionicons
-                            name="home-outline"
+                            name={focused ? "home" : "home-outline"}
                             color={color}
                             size={size}
                         />
@@ -34,9 +35,10 @@ export default function TabsLayout() {
             <Tabs.Screen
                 name="order/index"
                 options={{
-                    tabBarIcon: ({ color, size }) => (
+                    title: "Order",
+                    tabBarIcon: ({ color, size, focused }) => (
                         <Ionicons
-                            name="receipt-outline"
+                            name={focused ? "receipt" : "receipt-outline"}
                             color={color}
                             size={size}
                         />
@@ -46,9 +48,10 @@ export default function TabsLayout() {
             <Tabs.Screen
                 name="payment/index"
                 options={{
-                    tabBarIcon: ({ color, size }) => (
+                    title: "Payment",
+                    tabBarIcon: ({ color, size, focused }) => (
                         <Ionicons
-                            name="wallet-outline"
+                            name={focused ? "wallet" : "wallet-outline"}
                             color={color}
                             size={size}
                         />
@@ -58,9 +61,10 @@ export default function TabsLayout() {
             <Tabs.Screen
                 name="profile/index"
                 options={{
-                    tabBarIcon: ({ color, size }) => (
+                    title: "Profile",
+                    tabBarIcon: ({ color, size, focused }) => (
                         <Ionicons
-                            name="person-outline"
+                            name={focused ? "person" : "person-outline"}
                             color={color}
                             size={size}
                         />
