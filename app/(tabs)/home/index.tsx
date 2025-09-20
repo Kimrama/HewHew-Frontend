@@ -5,11 +5,13 @@ import { Colors } from '@/constants/Colors';
 import { ThemedText } from '@/components/ThemedText';
 import { SearchBar } from '@/components/SearchBar';
 import { StoreBlock } from '@/components/StoreBlock';
+import { useRef, useState } from "react";
+import { StoreType, sampleStores } from "@/sampleData/sample";
 
 const width = 335;
+const itemWidth = 355;
 
 const styles = StyleSheet.create({
-  page: { flex: 1 },
   notiButton: {
     backgroundColor: '#fff',
     width: 40,
@@ -25,9 +27,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     width: width,
+    marginLeft: 30
   },
   advert: {
     marginTop: 20,
+    marginBottom: 10,
+    marginLeft: 30,
     width: width,
     height: 150,
   },
@@ -51,51 +56,42 @@ const styles = StyleSheet.create({
     left: 16,
     top: 16,
   },
+  seeAllButton: {
+    backgroundColor: '#fff',
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
+  }
 });
-
-const sampleStores = [
-  {
-    image: { uri: 'https://cdn.shopify.com/s/files/1/0027/1866/2714/files/american-shrimp-fried-rice-served-with-chili-fish-sauce-thai-food.jpg?v=1746772616' },
-    name: 'ร้านอาหารตามสั่ง',
-    canteen: 'โรงอาหารพระเทพ',
-    onPress: () => console.log('ร้านอาหารตามสั่ง'),
-  },
-  {
-    image: { uri: 'https://cdn.shopify.com/s/files/1/0027/1866/2714/files/american-shrimp-fried-rice-served-with-chili-fish-sauce-thai-food.jpg?v=1746772616' },
-    name: 'ร้านก๋วยเตี๋ยว',
-    canteen: 'โรงอาหารกลาง',
-    onPress: () => console.log('ร้านก๋วยเตี๋ยว'),
-  },
-  {
-    image: { uri: 'https://cdn.shopify.com/s/files/1/0027/1866/2714/files/american-shrimp-fried-rice-served-with-chili-fish-sauce-thai-food.jpg?v=1746772616' },
-    name: 'ร้านเบเกอรี่',
-    canteen: 'โรงอาหารใต้',
-    onPress: () => console.log('ร้านเบเกอรี่'),
-  },
-  {
-    image: { uri: 'https://cdn.shopify.com/s/files/1/0027/1866/2714/files/american-shrimp-fried-rice-served-with-chili-fish-sauce-thai-food.jpg?v=1746772616' },
-    name: 'ร้านอาหารตามสั่ง',
-    canteen: 'โรงอาหารพระเทพ',
-    onPress: () => console.log('ร้านอาหารตามสั่ง'),
-  },
-  {
-    image: { uri: 'https://cdn.shopify.com/s/files/1/0027/1866/2714/files/american-shrimp-fried-rice-served-with-chili-fish-sauce-thai-food.jpg?v=1746772616' },
-    name: 'ร้านก๋วยเตี๋ยว',
-    canteen: 'โรงอาหารกลาง',
-    onPress: () => console.log('ร้านก๋วยเตี๋ยว'),
-  },
-  {
-    image: { uri: 'https://cdn.shopify.com/s/files/1/0027/1866/2714/files/american-shrimp-fried-rice-served-with-chili-fish-sauce-thai-food.jpg?v=1746772616' },
-    name: 'ร้านเบเกอรี่',
-    canteen: 'โรงอาหารใต้',
-    onPress: () => console.log('ร้านเบเกอรี่'),
-  },
-];
 
 export default function Index() {
   const renderStore: ListRenderItem<typeof sampleStores[0]> = ({ item }) => (
     <StoreBlock {...item} />
   );
+
+  const recommendRef = useRef<FlatList<StoreType>>(null);
+  const forYouRef = useRef<FlatList<StoreType>>(null);
+  const [recommendOffset, setRecommendOffset] = useState(0);
+  const [forYouOffset, setForYouOffset] = useState(0);
+
+  const handleScrollRecommend = () => {
+    const newOffset = recommendOffset + itemWidth;
+    if (recommendRef.current) {
+      recommendRef.current.scrollToOffset({ offset: newOffset, animated: true });
+      setRecommendOffset(newOffset);
+    }
+  };
+
+  const handleScrollForYou = () => {
+    const newOffset = forYouOffset + itemWidth;
+    if (forYouRef.current) {
+      forYouRef.current.scrollToOffset({ offset: newOffset, animated: true });
+      setForYouOffset(newOffset);
+    }
+  };
 
   return (
     <LinearGradient
@@ -105,7 +101,7 @@ export default function Index() {
       style={{ flex: 1 }}
     >
       <SafeAreaView style={{ flex: 1 }}>
-        <View style={{paddingVertical: 30, paddingLeft: 30}}>
+        <View style={{paddingVertical: 30}}>
         {/* <ScrollView contentContainerStyle={{ paddingVertical: 30, paddingLeft: 30}}> */}
           {/* header */}
           <View style={styles.headerRow}>
@@ -116,7 +112,7 @@ export default function Index() {
           </View>
 
           {/* search bar */}
-          <SearchBar placeholder="Search Menu, Store or Canteen" style={{ marginTop: 20 }} />
+          <SearchBar navigateOnPress placeholder="Search Menu, Store or Canteen" style={{ marginTop: 20, marginLeft: 30 }} />
 
           {/* advert */}
           <View style={styles.advert}>
@@ -135,23 +131,45 @@ export default function Index() {
           </View>
 
           {/* Recommend Store */}
-          <ThemedText type="subtitle" style={{ marginTop: 20, marginBottom: 10 }}>Recommend Store</ThemedText>
-          <FlatList
-            data={sampleStores}
-            renderItem={renderStore}
-            keyExtractor={(_, index) => index.toString()}
-            horizontal
-            showsHorizontalScrollIndicator={false}
+          <View style={styles.headerRow}>
+              <ThemedText type="subtitle" style={{ marginTop: 20, marginBottom: 10 }}>Recommend Store</ThemedText>
+              <Pressable style={styles.seeAllButton} onPress={handleScrollRecommend}>
+                <MaterialIcons name="arrow-forward-ios" size={15} color={Colors.black} />
+              </Pressable>
+          </View>
+          <FlatList 
+              ref={recommendRef}
+              data={sampleStores}
+              renderItem={renderStore}
+              keyExtractor={(_, index) => index.toString()}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              ItemSeparatorComponent={() => <View style={{ width: 10 }} />}
+              ListHeaderComponent={<View style={{ width: 30 }} />}
+              ListFooterComponent={<View style={{ width: 10, marginBottom: 10 }} />}
+              onScroll={e => setRecommendOffset(e.nativeEvent.contentOffset.x)}
+              scrollEventThrottle={16}
           />
 
           {/* For You */}
-          <ThemedText type="subtitle" style={{ marginTop: 20, marginBottom: 10 }}>For You</ThemedText>
-          <FlatList
-            data={sampleStores}
-            renderItem={renderStore}
-            keyExtractor={(_, index) => index.toString()}
-            horizontal
-            showsHorizontalScrollIndicator={false}
+          <View style={styles.headerRow}>
+              <ThemedText type="subtitle" style={{ marginTop: 20, marginBottom: 10 }}>For You</ThemedText>
+              <Pressable style={styles.seeAllButton} onPress={handleScrollForYou}>
+                <MaterialIcons name="arrow-forward-ios" size={15} color={Colors.black} />
+              </Pressable>
+          </View>
+          <FlatList 
+              ref={forYouRef}
+              data={sampleStores}
+              renderItem={renderStore}
+              keyExtractor={(_, index) => index.toString()}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              ItemSeparatorComponent={() => <View style={{ width: 10 }} />}
+              ListHeaderComponent={<View style={{ width: 30 }} />}
+              ListFooterComponent={<View style={{ width: 10, marginBottom: 10 }} />}
+              onScroll={e => setForYouOffset(e.nativeEvent.contentOffset.x)}
+              scrollEventThrottle={16}
           />
         {/* </ScrollView> */}
         </View>
