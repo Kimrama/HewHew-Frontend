@@ -1,9 +1,9 @@
-import React, { useState } from "react";
-import { View, Pressable, FlatList, StyleSheet } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
-import { Colors } from "@/constants/Colors";
 import { ThemedText } from "@/components/ThemedText";
+import { Colors } from "@/constants/Colors";
 import { sampleStores } from "@/sampleData/sample";
+import { MaterialIcons } from "@expo/vector-icons";
+import React, { useState } from "react";
+import { FlatList, Pressable, StyleSheet, View } from "react-native";
 
 type CanteenListProps = {
   onSelect: (canteen: string | null) => void; // callback ส่งชื่อ canteen
