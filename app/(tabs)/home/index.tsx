@@ -1,13 +1,14 @@
-import { SafeAreaView, StyleSheet, ScrollView, View, Pressable, Image, FlatList, ListRenderItem } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { MaterialIcons } from '@expo/vector-icons';
-import { Colors } from '@/constants/Colors';
-import { ThemedText } from '@/components/ThemedText';
 import { SearchBar } from '@/components/SearchBar';
 import { StoreBlock } from '@/components/StoreBlock';
 import { useRef, useState, useEffect } from "react";
 import { StoreType, sampleStores } from "@/sampleData/sample";
 import { getStore } from "@/api/store";
+import { ThemedText } from '@/components/ThemedText';
+import { Colors } from '@/constants/Colors';
+import { MaterialIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { FlatList, Image, ListRenderItem, Pressable, SafeAreaView, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const width = 335;
 const itemWidth = 355;
@@ -71,6 +72,7 @@ const styles = StyleSheet.create({
 });
 
 export default function Index() {
+  const insets = useSafeAreaInsets();
   const renderStore: ListRenderItem<typeof sampleStores[0]> = ({ item }) => (
     <StoreBlock {...item} onPress={item.onPress}/>
   );
@@ -119,7 +121,7 @@ export default function Index() {
       end={{ x: 0, y: 1 }}
       style={{ flex: 1 }}
     >
-      <SafeAreaView style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1, paddingBottom: 60 + insets.bottom }}>
         <View style={{paddingVertical: 30}}>
         {/* <ScrollView contentContainerStyle={{ paddingVertical: 30, paddingLeft: 30}}> */}
           {/* header */}

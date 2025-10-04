@@ -1,8 +1,11 @@
 import { StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function Index() {
+    const insets = useSafeAreaInsets();
+    
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { paddingBottom: 60 + insets.bottom }]}>
             <Text style={styles.title}>Order</Text>
         </View>
     );
