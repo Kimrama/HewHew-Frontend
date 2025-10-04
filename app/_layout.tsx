@@ -1,5 +1,6 @@
+import AuthContextProvider from "@/store/auth-context";
+import { Prompt_400Regular, Prompt_500Medium, Prompt_700Bold, useFonts } from '@expo-google-fonts/prompt';
 import { Stack } from "expo-router";
-import { useFonts, Prompt_400Regular, Prompt_500Medium, Prompt_700Bold } from '@expo-google-fonts/prompt';
 
 export default function RootLayout() {
     const [fontsLoaded] = useFonts({
@@ -13,10 +14,12 @@ export default function RootLayout() {
     }
 
     return (
-        <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-            <Stack.Screen name="search/index" options={{ headerShown: false }} />
-        </Stack>
+        <AuthContextProvider>
+            <Stack>
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+                <Stack.Screen name="search/index" options={{ headerShown: false }} />
+            </Stack>
+        </AuthContextProvider>
     );
 }
