@@ -1,4 +1,5 @@
 import Ionicons from "@expo/vector-icons/build/Ionicons";
+import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -22,7 +23,25 @@ export default function Register() {
     confirmPassword: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [imageUri, setImageUri] = useState<string | null>(null);
 
+  const pickImage = async () => {
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
+      alert("Permission to access camera roll is required!");
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      setImageUri(result.assets[0].uri);
+    }
+  };
   return (
     <ScrollView style={styles.container}>
       <View style={styles.titleContainer}>
@@ -41,12 +60,24 @@ export default function Register() {
         style={styles.gradient}
       >
         <View style={styles.pictureContainer}>
-          <View style={styles.picture}>
-            <Image
-              source={require("@/assets/images/upload-image.png")}
-              style={{ width: 130, height: 130, position: "relative", left: 8 }}
-            />
-          </View>
+          <Pressable style={styles.picture} onPress={pickImage}>
+            {imageUri ? (
+              <Image source={{ uri: imageUri }} style={styles.picturePreview} />
+            ) : (
+              <Image
+                source={require("@/assets/images/upload-image.png")}
+                style={{
+                  width: 130,
+                  height: 130,
+                  position: "relative",
+                  left: 8,
+                }}
+              />
+            )}
+            <View style={styles.uploadOverlay}>
+              <Text style={styles.uploadText}>Upload</Text>
+            </View>
+          </Pressable>
         </View>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Username</Text>
@@ -115,6 +146,7 @@ export default function Register() {
             </LinearGradient>
           </TouchableOpacity>
           <View style={styles.line} />
+
           <View
             style={{
               flexDirection: "row",
@@ -123,7 +155,7 @@ export default function Register() {
             }}
           >
             <Text style={{ textAlign: "center", alignItems: "center" }}>
-              Don't have any account?{" "}
+              Already have an account?{" "}
             </Text>
             <Pressable
               style={{
@@ -133,7 +165,7 @@ export default function Register() {
               }}
               onPress={() => router.replace("/(auth)/register")}
             >
-              <Text style={{ color: "#0A6847" }}>Sign Up</Text>
+              <Text style={{ color: "#0A6847" }}>Sign in here</Text>
             </Pressable>
           </View>
         </View>
@@ -185,6 +217,33 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     shadowColor: "#000",
+  },
+
+  picturePreview: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: 235,
+    height: 235,
+    borderRadius: 117.5,
+    resizeMode: "cover",
+  },
+
+  uploadOverlay: {
+    position: "absolute",
+    bottom: 10,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+  },
+  uploadText: {
+    backgroundColor: "rgba(0,0,0,0.5)",
+    color: "white",
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    fontSize: 14,
+    overflow: "hidden",
   },
 
   inputContainer: {
