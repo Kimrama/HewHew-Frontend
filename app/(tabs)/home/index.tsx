@@ -5,11 +5,14 @@ import { Colors } from '@/constants/Colors';
 import { ThemedText } from '@/components/ThemedText';
 import { SearchBar } from '@/components/SearchBar';
 import { StoreBlock } from '@/components/StoreBlock';
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { StoreType, sampleStores } from "@/sampleData/sample";
+import { getStore } from "@/api/store";
 
 const width = 335;
 const itemWidth = 355;
+const default_image = require('../../../assets/images/default-featured-image.jpg');
+
 
 const styles = StyleSheet.create({
   notiButton: {
@@ -69,13 +72,29 @@ const styles = StyleSheet.create({
 
 export default function Index() {
   const renderStore: ListRenderItem<typeof sampleStores[0]> = ({ item }) => (
-    <StoreBlock {...item} />
+    <StoreBlock {...item} onPress={item.onPress}/>
   );
 
   const recommendRef = useRef<FlatList<StoreType>>(null);
   const forYouRef = useRef<FlatList<StoreType>>(null);
   const [recommendOffset, setRecommendOffset] = useState(0);
   const [forYouOffset, setForYouOffset] = useState(0);
+  const [storeName, setStoreName] = useState<string | null>(null);
+  const [canteen, setCanteen] = useState<string | null>(null);
+  const [state, setState] = useState(false);
+  const [storeImage, setStoreImage] = useState<string>(default_image);
+
+  useEffect(() => {
+        const fetchData = async () => {
+            const store = await getStore();
+            console.log(store);
+            setStoreName(store.name);
+            setCanteen(store.canteen_name);
+            setState(store.state);
+            setStoreImage(store.shopimg || default_image);
+        };
+        fetchData();
+    }, []);
 
   const handleScrollRecommend = () => {
     const newOffset = recommendOffset + itemWidth;

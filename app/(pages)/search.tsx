@@ -34,8 +34,8 @@ export default function Search() {
     const matchesSearch =
       searchQuery === "" ||
       store.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      store.canteen.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      store.menus.some((f) => f.name.toLowerCase().includes(searchQuery.toLowerCase()));
+      store.canteen.toLowerCase().includes(searchQuery.toLowerCase()) //||
+      // store.menus.some((f) => f.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
     const matchesCanteen =
       !selectedCanteen || store.canteen === selectedCanteen;
@@ -82,6 +82,7 @@ export default function Search() {
               scrollEnabled={false}
               showsVerticalScrollIndicator={false}
               ListFooterComponent={<View style={{ height: 50 }} />}
+              
               // ถ้าไม่มีผลลัพธ์ที่ตรง
               ListEmptyComponent={
                 <View style={{ alignItems: "center", marginTop: 20 }}>
