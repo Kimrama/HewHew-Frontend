@@ -48,14 +48,13 @@ export default function Login() {
       >
         <Ionicons name="chevron-back-outline" size={24} color="black" />
       </Pressable>
-      <View style={styles.inputContainer}>
-        <View style={{ marginBottom: 30 }}>
 
+      <View style={styles.inputContainer}>
         <Text style={styles.title}>Sign In</Text>
         <Text style={styles.label}>Username</Text>
         <TextInput
           style={styles.input}
-          placeholder="Email"
+          placeholder="Username"
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
@@ -68,26 +67,39 @@ export default function Login() {
           value={password}
           onChangeText={setPassword}
           secureTextEntry
-          />
-          </View>
-
-        <TouchableOpacity
-          style={[styles.button, isLoading && styles.buttonDisabled]}
-          onPress={handleLogin}
-          disabled={isLoading}
-        >
-          <LinearGradient
-            colors={["#0A6847", "#7ABA78"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.gradient}
+        />
+        </View>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={[styles.button, isLoading && styles.buttonDisabled]}
+            onPress={handleLogin}
+            disabled={isLoading}
           >
-            <Text style={styles.buttonText}>
-              {isLoading ? "Signing in..." : "Sign In"}
-            </Text>
-          </LinearGradient>
-        </TouchableOpacity>
-      </View>
+            <LinearGradient
+              colors={["#0A6847", "#7ABA78"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.gradient}
+            >
+              <Text style={styles.buttonText}>
+                {isLoading ? "Signing in..." : "Sign In"}
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
+          <View style={styles.line} />
+          <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 20 }}>
+            <Text style={{ textAlign: "center", alignItems: "center" }}>
+              Don't have any account?{" "}
+              </Text>
+              <Pressable
+                style={{ alignItems: "center", borderBottomWidth: 1, borderColor: "#0A6847" }}
+                onPress={() => router.replace("/(auth)/register")}
+              >
+                <Text style={{ color: "#0A6847" }}>Sign Up</Text>
+              </Pressable>
+          </View>
+        </View>
+      
       <View style={styles.rotateBackground}></View>
     </View>
   );
@@ -107,6 +119,7 @@ const styles = StyleSheet.create({
     marginTop: 60,
     zIndex: 2,
     justifyContent: "space-between",
+    marginBottom: 100,
   },
   brand: {
     position: "absolute",
@@ -135,9 +148,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     backgroundColor: "white",
   },
-  button: {
-    borderRadius: 25,
-  },
   gradient: {
     paddingVertical: 15,
     paddingHorizontal: 20,
@@ -163,5 +173,21 @@ const styles = StyleSheet.create({
     width: 750,
     height: 750,
     transform: [{ rotate: "24deg" }],
+  },
+  buttonContainer: {
+    position: "absolute",
+    bottom: 100,
+    left: 0,
+    right: 0,
+    zIndex: 2,
+    paddingHorizontal: 20,
+  },
+  button: {
+    marginBottom: 20,
+  },
+  line: {
+    borderBottomColor: "black",
+    borderBottomWidth: 1,
+    width: "100%",
   },
 });
