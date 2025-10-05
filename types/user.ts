@@ -10,3 +10,8 @@ export interface UserSignIn {
   username: string;
   password: string;
 }
+
+export interface singInResponse {
+  token?: string;
+  error?: string;
+}

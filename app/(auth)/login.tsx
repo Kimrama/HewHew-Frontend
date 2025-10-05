@@ -1,39 +1,48 @@
+import { signIn } from "@/api/auth";
 import { AuthContext } from "@/store/auth-context";
 import Ionicons from "@expo/vector-icons/build/Ionicons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useContext, useState } from "react";
 import {
-    Alert,
-    Pressable,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
+import { UserSignIn } from "../../types/user";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [userInput, setUserInput] = useState<UserSignIn>({
+    username: "",
+    password: "",
+  });
+
   const [isLoading, setIsLoading] = useState(false);
   const { authenticate } = useContext(AuthContext);
 
   const handleLogin = async () => {
-    if (!email || !password) {
+    if (!userInput.username || !userInput.password) {
       Alert.alert("Error", "Please fill in all fields");
       return;
     }
 
     setIsLoading(true);
+
     try {
-      // TODO: Replace this with your actual API call
-      // For now, simulating a login with a fake token
-      const fakeToken = "fake-jwt-token-" + Date.now();
-      authenticate(fakeToken);
-      router.replace("/home");
+      const data = await signIn(userInput);
+      if (data.token) {
+        console.log("Login successful, token:", data.token);
+        authenticate(data.token);
+        router.replace("/(tabs)/home");
+      } else {
+        Alert.alert("Login Failed", data.error || "Unknown error occurred");
+      }
     } catch (error) {
-      Alert.alert("Error", "Login failed. Please try again.");
+      Alert.alert("Login Failed", "An error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -55,8 +64,10 @@ export default function Login() {
         <TextInput
           style={styles.input}
           placeholder="Username"
-          value={email}
-          onChangeText={setEmail}
+          value={userInput.username}
+          onChangeText={(text) =>
+            setUserInput((prev) => ({ ...prev, username: text }))
+          }
           keyboardType="email-address"
           autoCapitalize="none"
         />
@@ -64,42 +75,54 @@ export default function Login() {
         <TextInput
           style={styles.input}
           placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
+          value={userInput.password}
+          onChangeText={(text) =>
+            setUserInput((prev) => ({ ...prev, password: text }))
+          }
           secureTextEntry
         />
-        </View>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={[styles.button, isLoading && styles.buttonDisabled]}
-            onPress={handleLogin}
-            disabled={isLoading}
+      </View>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={[styles.button, isLoading && styles.buttonDisabled]}
+          onPress={handleLogin}
+          disabled={isLoading}
+        >
+          <LinearGradient
+            colors={["#0A6847", "#7ABA78"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.gradient}
           >
-            <LinearGradient
-              colors={["#0A6847", "#7ABA78"]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.gradient}
-            >
-              <Text style={styles.buttonText}>
-                {isLoading ? "Signing in..." : "Sign In"}
-              </Text>
-            </LinearGradient>
-          </TouchableOpacity>
-          <View style={styles.line} />
-          <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 20 }}>
-            <Text style={{ textAlign: "center", alignItems: "center" }}>
-              Don't have any account?{" "}
-              </Text>
-              <Pressable
-                style={{ alignItems: "center", borderBottomWidth: 1, borderColor: "#0A6847" }}
-                onPress={() => router.replace("/(auth)/register")}
-              >
-                <Text style={{ color: "#0A6847" }}>Sign Up</Text>
-              </Pressable>
-          </View>
+            <Text style={styles.buttonText}>
+              {isLoading ? "Signing in..." : "Sign In"}
+            </Text>
+          </LinearGradient>
+        </TouchableOpacity>
+        <View style={styles.line} />
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "center",
+            marginTop: 20,
+          }}
+        >
+          <Text style={{ textAlign: "center", alignItems: "center" }}>
+            Don't have any account?{" "}
+          </Text>
+          <Pressable
+            style={{
+              alignItems: "center",
+              borderBottomWidth: 1,
+              borderColor: "#0A6847",
+            }}
+            onPress={() => router.replace("/(auth)/register")}
+          >
+            <Text style={{ color: "#0A6847" }}>Sign Up</Text>
+          </Pressable>
         </View>
-      
+      </View>
+
       <View style={styles.rotateBackground}></View>
     </View>
   );
