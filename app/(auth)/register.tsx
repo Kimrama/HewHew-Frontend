@@ -1,9 +1,12 @@
+import { signUp } from "@/api/auth";
+import { singUpResponse } from "@/types/user";
 import Ionicons from "@expo/vector-icons/build/Ionicons";
 import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
+  Alert,
   Image,
   Pressable,
   ScrollView,
@@ -42,6 +45,46 @@ export default function Register() {
       setImageUri(result.assets[0].uri);
     }
   };
+
+  const handleSignUp = async () => {
+    // Basic validation
+    if (
+      !userInput.username ||
+      !userInput.firstName ||
+      !userInput.lastName ||
+      !userInput.password ||
+      !userInput.confirmPassword
+    ) {
+      Alert.alert("Sign Up Error", "Please fill in all fields.");
+      return;
+    }
+    if (userInput.password !== userInput.confirmPassword) {
+      Alert.alert("Sign Up Error", "Passwords do not match.");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const data: singUpResponse = await signUp(
+        userInput,
+        imageUri || undefined
+      );
+      if (data.message) {
+        Alert.alert("Success", "Registration successful! Please log in.", [
+          { text: "OK", onPress: () => router.replace("/(auth)/login") },
+        ]);
+      } else {
+        Alert.alert("Sign Up Error", data.error || "Registration failed.");
+      }
+    } catch (error: any) {
+      Alert.alert(
+        "Sign Up Error",
+        error.response?.data?.error || "An error occurred. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.titleContainer}>
@@ -131,7 +174,7 @@ export default function Register() {
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={[styles.button, isLoading && styles.buttonDisabled]}
-            // onPress={handleLogin}
+            onPress={handleSignUp}
             disabled={isLoading}
           >
             <LinearGradient
@@ -141,7 +184,7 @@ export default function Register() {
               style={styles.buttonGradient}
             >
               <Text style={styles.buttonText}>
-                {isLoading ? "Signing in..." : "Sign In"}
+                {isLoading ? "Signing up..." : "Sign Up"}
               </Text>
             </LinearGradient>
           </TouchableOpacity>

@@ -15,3 +15,8 @@ export interface singInResponse {
   token?: string;
   error?: string;
 }
+
+export interface singUpResponse {
+  message?: string;
+  error?: string;
+}
