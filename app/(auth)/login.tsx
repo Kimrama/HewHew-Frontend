@@ -35,14 +35,15 @@ export default function Login() {
     try {
       const data = await signIn(userInput);
       if (data.token) {
-        console.log("Login successful, token:", data.token);
         authenticate(data.token);
         router.replace("/(tabs)/home");
       } else {
         Alert.alert("Login Failed", data.error || "Unknown error occurred");
       }
-    } catch (error) {
-      Alert.alert("Login Failed", "An error occurred. Please try again.");
+    } catch (error: any) {
+      if (error.response && error.response.data && error.response.data.error) {
+        Alert.alert("Login Failed", error.response.data.error);
+      }
     } finally {
       setIsLoading(false);
     }
