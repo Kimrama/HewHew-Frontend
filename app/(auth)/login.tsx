@@ -1,39 +1,49 @@
+import { signIn } from "@/api/auth";
 import { AuthContext } from "@/store/auth-context";
 import Ionicons from "@expo/vector-icons/build/Ionicons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useContext, useState } from "react";
 import {
-    Alert,
-    Pressable,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
+import { UserSignIn } from "../../types/user";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [userInput, setUserInput] = useState<UserSignIn>({
+    username: "",
+    password: "",
+  });
+
   const [isLoading, setIsLoading] = useState(false);
   const { authenticate } = useContext(AuthContext);
 
   const handleLogin = async () => {
-    if (!email || !password) {
+    if (!userInput.username || !userInput.password) {
       Alert.alert("Error", "Please fill in all fields");
       return;
     }
 
     setIsLoading(true);
+
     try {
-      // TODO: Replace this with your actual API call
-      // For now, simulating a login with a fake token
-      const fakeToken = "fake-jwt-token-" + Date.now();
-      authenticate(fakeToken);
-      router.replace("/home");
-    } catch (error) {
-      Alert.alert("Error", "Login failed. Please try again.");
+      const data = await signIn(userInput);
+      if (data.token) {
+        authenticate(data.token);
+        router.replace("/(tabs)/home");
+      } else {
+        Alert.alert("Login Failed", data.error || "Unknown error occurred");
+      }
+    } catch (error: any) {
+      if (error.response && error.response.data && error.response.data.error) {
+        Alert.alert("Login Failed", error.response.data.error);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -48,16 +58,17 @@ export default function Login() {
       >
         <Ionicons name="chevron-back-outline" size={24} color="black" />
       </Pressable>
-      <View style={styles.inputContainer}>
-        <View style={{ marginBottom: 30 }}>
 
+      <View style={styles.inputContainer}>
         <Text style={styles.title}>Sign In</Text>
         <Text style={styles.label}>Username</Text>
         <TextInput
           style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
+          placeholder="Username"
+          value={userInput.username}
+          onChangeText={(text) =>
+            setUserInput((prev) => ({ ...prev, username: text }))
+          }
           keyboardType="email-address"
           autoCapitalize="none"
         />
@@ -65,12 +76,14 @@ export default function Login() {
         <TextInput
           style={styles.input}
           placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
+          value={userInput.password}
+          onChangeText={(text) =>
+            setUserInput((prev) => ({ ...prev, password: text }))
+          }
           secureTextEntry
-          />
-          </View>
-
+        />
+      </View>
+      <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={[styles.button, isLoading && styles.buttonDisabled]}
           onPress={handleLogin}
@@ -87,7 +100,30 @@ export default function Login() {
             </Text>
           </LinearGradient>
         </TouchableOpacity>
+        <View style={styles.line} />
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "center",
+            marginTop: 20,
+          }}
+        >
+          <Text style={{ textAlign: "center", alignItems: "center" }}>
+            Don't have any account?{" "}
+          </Text>
+          <Pressable
+            style={{
+              alignItems: "center",
+              borderBottomWidth: 1,
+              borderColor: "#0A6847",
+            }}
+            onPress={() => router.replace("/(auth)/register")}
+          >
+            <Text style={{ color: "#0A6847" }}>Sign Up</Text>
+          </Pressable>
+        </View>
       </View>
+
       <View style={styles.rotateBackground}></View>
     </View>
   );
@@ -107,6 +143,7 @@ const styles = StyleSheet.create({
     marginTop: 60,
     zIndex: 2,
     justifyContent: "space-between",
+    marginBottom: 100,
   },
   brand: {
     position: "absolute",
@@ -135,9 +172,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     backgroundColor: "white",
   },
-  button: {
-    borderRadius: 25,
-  },
   gradient: {
     paddingVertical: 15,
     paddingHorizontal: 20,
@@ -163,5 +197,21 @@ const styles = StyleSheet.create({
     width: 750,
     height: 750,
     transform: [{ rotate: "24deg" }],
+  },
+  buttonContainer: {
+    position: "absolute",
+    bottom: 100,
+    left: 0,
+    right: 0,
+    zIndex: 2,
+    paddingHorizontal: 20,
+  },
+  button: {
+    marginBottom: 20,
+  },
+  line: {
+    borderBottomColor: "black",
+    borderBottomWidth: 1,
+    width: "100%",
   },
 });
