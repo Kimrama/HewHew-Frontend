@@ -9,9 +9,10 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FlatList, Image, ListRenderItem, Pressable, SafeAreaView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from "expo-router";
 
-const width = 335;
-const itemWidth = 355;
+const width = 350;
+const itemWidth = 360;
 const default_image = require('../../../assets/images/default-featured-image.jpg');
 
 
@@ -23,7 +24,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 5,
+    elevation: 2,
     marginTop: 20,
   },
   headerRow: {
@@ -39,12 +40,21 @@ const styles = StyleSheet.create({
     marginLeft: 30,
     width: width,
     height: 150,
+    borderRadius: 20,     
+    overflow: 'hidden',
+    elevation: 5,          
+    position: 'relative', 
   },
   image: {
     width: '100%',
     height: '100%',
-    borderRadius: 20,
-    elevation: 5,
+  },
+  advertText: {
+    position: 'absolute',
+    left: 16,
+    top: 16,
+    color: '#fff',    
+    zIndex: 1,          
   },
   orderButton: {
     position: 'absolute',
@@ -54,11 +64,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingVertical: 8,
     paddingHorizontal: 16,
-  },
-  advertText: {
-    position: 'absolute',
-    left: 16,
-    top: 16,
+    zIndex: 1,   
   },
   seeAllButton: {
     backgroundColor: '#fff',
@@ -67,14 +73,26 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 5,
+    elevation: 2,
+  },
+  cartButton: {
+    position: 'absolute',
+    right: 31,
+    bottom: 5,
+    backgroundColor: Colors.primary,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 2,
   }
 });
 
 export default function Index() {
   const insets = useSafeAreaInsets();
   const renderStore: ListRenderItem<typeof sampleStores[0]> = ({ item }) => (
-    <StoreBlock {...item} onPress={item.onPress}/>
+    <StoreBlock {...item}/>
   );
 
   const recommendRef = useRef<FlatList<StoreType>>(null);
@@ -85,13 +103,13 @@ export default function Index() {
   const [canteen, setCanteen] = useState<string | null>(null);
   const [state, setState] = useState(false);
   const [storeImage, setStoreImage] = useState<string>(default_image);
+  const router = useRouter();
 
   useEffect(() => {
         const fetchData = async () => {
             const store = await getStore();
             console.log(store);
             setStoreName(store.name);
-            setCanteen(store.canteen_name);
             setState(store.state);
             setStoreImage(store.shopimg || default_image);
         };
@@ -123,11 +141,10 @@ export default function Index() {
     >
       <SafeAreaView style={{ flex: 1, paddingBottom: 60 + insets.bottom }}>
         <View style={{paddingVertical: 30}}>
-        {/* <ScrollView contentContainerStyle={{ paddingVertical: 30, paddingLeft: 30}}> */}
           {/* header */}
           <View style={styles.headerRow}>
             <ThemedText type="titleLarge">HewHew</ThemedText>
-            <Pressable style={styles.notiButton}>
+            <Pressable style={styles.notiButton} onPress={() => {router.push("/(pages)/notifications");}}>
               <MaterialIcons name="notifications" size={25} color={Colors.secondary} />
             </Pressable>
           </View>
@@ -192,7 +209,9 @@ export default function Index() {
               onScroll={e => setForYouOffset(e.nativeEvent.contentOffset.x)}
               scrollEventThrottle={16}
           />
-        {/* </ScrollView> */}
+          <Pressable style={styles.cartButton}  onPress={() => {router.push("/(pages)/cart");}}>
+            <MaterialIcons name="shopping-cart" size={30} color={Colors.white} />
+          </Pressable>
         </View>
       </SafeAreaView>
     </LinearGradient>

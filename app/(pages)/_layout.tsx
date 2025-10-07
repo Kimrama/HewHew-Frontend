@@ -5,6 +5,8 @@ export default function PagesLayout() {
         <Stack>
             <Stack.Screen name="search" options={{ headerShown: false }} />
             <Stack.Screen name="menu" options={{ title: "Menu", headerTitleAlign: "center",}} />
+            <Stack.Screen name="notifications" options={{ title: "Notifications", headerTitleAlign: "center",}} />
+            <Stack.Screen name="cart" options={{ title: "Cart", headerTitleAlign: "center",}} />
         </Stack>
     );
 }

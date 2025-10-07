@@ -10,7 +10,7 @@ import { sampleStores } from "@/sampleData/sample";
 import { CanteenList } from "@/components/CanteenList";
 import { useRef, useState } from "react";
 
-const width = 335;
+const width = 350;
 const router = useRouter();
 
 const styles = StyleSheet.create({
@@ -24,7 +24,7 @@ const styles = StyleSheet.create({
 
 export default function Search() {
   const renderStore: ListRenderItem<typeof sampleStores[0]> = ({ item }) => (
-    <StoreBlock {...item} widthSize={155} heightSize={130}/>
+    <StoreBlock {...item} widthSize={165} heightSize={130}/>
   );
 
   const [searchQuery, setSearchQuery] = useState("");

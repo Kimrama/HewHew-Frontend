@@ -4,7 +4,7 @@ import { Colors } from '@/constants/Colors';
 import { styles as textStyles } from '@/components/ThemedText';
 import { useRouter } from 'expo-router';
 
-const width = 335;
+const width = 350;
 
 type SearchBarProps = {
   value?: string;
@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 20,
     paddingHorizontal: 12,
-    elevation: 5,
+    elevation: 2,
   },
   input: {
     flex: 1,

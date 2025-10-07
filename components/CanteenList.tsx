@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      width: 335,
+      width: 350,
     },
     Row: {
       flexDirection: 'row',
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
       paddingVertical: 10
     },
     Selected: {
-      width: 335,
+      width: 350,
       flexDirection: 'row',
       justifyContent: 'flex-start',
       alignItems: 'center',
