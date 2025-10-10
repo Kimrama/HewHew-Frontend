@@ -1,15 +1,15 @@
+import { getStore } from "@/api/store";
 import { SearchBar } from '@/components/SearchBar';
 import { StoreBlock } from '@/components/StoreBlock';
-import { useRef, useState, useEffect } from "react";
-import { StoreType, sampleStores } from "@/sampleData/sample";
-import { getStore } from "@/api/store";
 import { ThemedText } from '@/components/ThemedText';
 import { Colors } from '@/constants/Colors';
+import { StoreType, sampleStores } from "@/sampleData/sample";
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from "expo-router";
+import { useEffect, useRef, useState } from "react";
 import { FlatList, Image, ListRenderItem, Pressable, SafeAreaView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from "expo-router";
 
 const width = 350;
 const itemWidth = 360;
@@ -106,13 +106,16 @@ export default function Index() {
   const router = useRouter();
 
   useEffect(() => {
-        const fetchData = async () => {
-            const store = await getStore();
-            console.log(store);
-            setStoreName(store.name);
-            setState(store.state);
-            setStoreImage(store.shopimg || default_image);
-        };
+        async function fetchData() {
+          try {
+            const response = await getStore();
+            console.log(response)
+          } catch (err) {
+            console.log(err)
+          }
+
+        }
+        
         fetchData();
     }, []);
 
