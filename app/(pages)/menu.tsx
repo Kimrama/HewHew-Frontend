@@ -3,6 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { ThemedText } from '@/components/ThemedText';
+import { ThemedButton } from '@/components/ThemedButton';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useRef, useState } from "react";
 import { SearchBar } from '@/components/SearchBar';
@@ -14,7 +15,7 @@ const width = 412;
 
 const styles = StyleSheet.create({
     headerImg: {
-        height: 150,
+        height: 100,
         width: width,
         position: "relative"
     },
@@ -32,7 +33,7 @@ const styles = StyleSheet.create({
     },
     headerName: {
         position: "absolute",
-        top: 35,
+        top: 15,
         left: 30,
         color: Colors.white
     },
@@ -40,12 +41,12 @@ const styles = StyleSheet.create({
         color: Colors.secondary,
         marginRight: 20,
         position: "absolute",
-        top: 80,
+        top: 50,
         left: 30
     },
     headerCanteen: {
         position: "absolute",
-        top: 85,
+        top: 55,
         left: 60,
         color: Colors.white
     }
@@ -56,15 +57,33 @@ export default function Menu() {
     const imgUri = Array.isArray(image) ? image[0] : image;
     const isOpen = states === "true";
     const [selected, setSelected] = useState<string | null>(null);
+    const [menuCounts, setMenuCounts] = useState<{ [key: string]: number }>({});
 
     const tags = ["Popular", "Noodle", "Spicy", "Curry", "Dessert", "Sweet", "Soup", "Rice", "Quick", "Egg", "Budget"]
     const [searchText, setSearchText] = useState("");
 
+    // change sample -> data
     const filteredMenu = sampleMenu.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchText.toLowerCase());
     const matchesTag = selected ? item.tag1 === selected || item.tag2 === selected : true;
     return matchesSearch && matchesTag;
     });
+
+    const handleCountChange = (menuName: string, newCount: number) => {
+    setMenuCounts(prev => ({
+        ...prev,
+        [menuName]: newCount,
+        }));
+    };
+
+    const getMenuLine = () => {
+        return sampleMenu
+        .filter(item => (menuCounts[item.name] ?? 0) > 0)
+        .map(item => ({
+            ...item,
+            quantity: menuCounts[item.name],
+        }));
+    };
 
     return (
         <LinearGradient
@@ -103,17 +122,24 @@ export default function Menu() {
         <FlatList
             data={filteredMenu}
             keyExtractor={(item, idx) => `${item.name}-${idx}`}
-            contentContainerStyle={{ paddingBottom: 30, alignItems: "center" }}
+            contentContainerStyle={{ alignItems: "center" }}
+            ListFooterComponent={<View style={{marginBottom: 120}}></View>}
             renderItem={({ item }) => (
                 <MenuBlock
                 name={item.name}
                 price={item.price}
                 imageUrl={item.imageUrl}
-                tag1={item.tag1} 
+                tag1={item.tag1}
                 tag2={item.tag2}
+                count={menuCounts[item.name] || 0}
+                onCountChange={handleCountChange}
                 />
             )}
         />
+
+        <View style={{marginVertical: 30, position: 'absolute', left: 30, bottom: 30}}>
+            <ThemedButton title="{} รายการ" title2="฿ {}" variant="primary" onPress={() => {}} />
+        </View>
         </SafeAreaView>
     </LinearGradient>
     );
