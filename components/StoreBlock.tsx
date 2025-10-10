@@ -2,7 +2,6 @@ import { View, Text, Image, StyleSheet, Pressable } from "react-native";
 import { Colors } from "@/constants/Colors";
 import { MaterialIcons } from '@expo/vector-icons';
 import { ThemedText } from "@/components/ThemedText";
-
 import { useRouter } from "expo-router";
 
 type StoreBlockProps = {

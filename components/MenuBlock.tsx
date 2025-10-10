@@ -8,13 +8,14 @@ type MenuBlockProps = {
   name: string;
   price: number;
   imageUrl: string;
+  info: string;
   tag1?: string;
   tag2?: string;
   count: number;
   onCountChange: (menuName: string, newCount: number) => void;
 };
 
-export function MenuBlock({ name, price, imageUrl, count, onCountChange }: MenuBlockProps) {
+export function MenuBlock({ name, info, price, imageUrl, count, onCountChange }: MenuBlockProps) {
   const [isActive, setIsActive] = useState(false);
   const [isMinus, setIsMinus] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -65,10 +66,11 @@ export function MenuBlock({ name, price, imageUrl, count, onCountChange }: MenuB
       <View style={{ flex: 1 }}>
         <View style={styles.infoContainer}>
           <ThemedText style={styles.name}>{name}</ThemedText>
+          <ThemedText>{info}</ThemedText>
           <ThemedText style={styles.price}>฿ {price}</ThemedText>
         </View>
 
-        <View style={{ width: '100%', alignItems: 'flex-end' }}>
+        <View style={{ position: 'absolute', right: 2, bottom: 2}}>
           {!isActive && !isDefaultActive ? (
             <Pressable onPress={handleAddPress}>
               <MaterialIcons name="add-circle" size={30} color={Colors.primary} />
@@ -119,11 +121,11 @@ const styles = StyleSheet.create({
   infoContainer: {
     flex: 1,
     marginLeft: 12,
+    gap: 6
   },
   name: {
     fontSize: 16,
     fontWeight: "700",
-    marginBottom: 6,
   },
   price: {
     fontSize: 16,

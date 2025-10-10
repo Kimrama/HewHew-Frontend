@@ -1,22 +1,27 @@
-import { getStore } from "@/api/store";
+import { getStore, Store } from "@/api/store";
 import { SearchBar } from '@/components/SearchBar';
 import { StoreBlock } from '@/components/StoreBlock';
 import { ThemedText } from '@/components/ThemedText';
 import { Colors } from '@/constants/Colors';
-import { StoreType, sampleStores } from "@/sampleData/sample";
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { FlatList, Image, ListRenderItem, Pressable, SafeAreaView, StyleSheet, View } from 'react-native';
+import { FlatList, Image, ListRenderItem, Pressable, SafeAreaView, StyleSheet, View, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const width = 350;
 const itemWidth = 360;
-const default_image = require('../../../assets/images/default-featured-image.jpg');
+const default_image = require('@/assets/images/default-featured-image.jpg')
 
 
 const styles = StyleSheet.create({
+  brand: {
+    top: 10,
+    fontSize: 30,
+    fontFamily: "KaushanScript_400Regular",
+    color: "#0A6847",
+  },
   notiButton: {
     backgroundColor: '#fff',
     width: 40,
@@ -91,33 +96,40 @@ const styles = StyleSheet.create({
 
 export default function Index() {
   const insets = useSafeAreaInsets();
-  const renderStore: ListRenderItem<typeof sampleStores[0]> = ({ item }) => (
-    <StoreBlock {...item}/>
-  );
+  const renderStore: ListRenderItem<Store> = ({ item }) => {
+    const imageSource =
+    item.ImageURL && item.ImageURL.trim() !== ""
+      ? { uri: item.ImageURL } 
+      : default_image;  
 
-  const recommendRef = useRef<FlatList<StoreType>>(null);
-  const forYouRef = useRef<FlatList<StoreType>>(null);
+    return (
+      <StoreBlock
+        state={item.State}
+        image={imageSource}
+        name={item.Name}
+        canteen={item.CanteenName}
+      />
+    );
+  };
+
+  const recommendRef = useRef<FlatList<Store>>(null);
+  const forYouRef = useRef<FlatList<Store>>(null);
   const [recommendOffset, setRecommendOffset] = useState(0);
   const [forYouOffset, setForYouOffset] = useState(0);
-  const [storeName, setStoreName] = useState<string | null>(null);
-  const [canteen, setCanteen] = useState<string | null>(null);
-  const [state, setState] = useState(false);
-  const [storeImage, setStoreImage] = useState<string>(default_image);
+  const [stores, setStores] = useState<Store[]>([])
   const router = useRouter();
 
   useEffect(() => {
-        async function fetchData() {
-          try {
-            const response = await getStore();
-            console.log(response)
-          } catch (err) {
-            console.log(err)
-          }
-
-        }
-        
-        fetchData();
-    }, []);
+    const fetchData = async () => {
+      try {
+        const response = await getStore();
+        setStores(response);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchData();
+  }, []);
 
   const handleScrollRecommend = () => {
     const newOffset = recommendOffset + itemWidth;
@@ -146,7 +158,7 @@ export default function Index() {
         <View style={{paddingVertical: 30}}>
           {/* header */}
           <View style={styles.headerRow}>
-            <ThemedText type="titleLarge">HewHew</ThemedText>
+            <Text style={styles.brand}>HewHew</Text>
             <Pressable style={styles.notiButton} onPress={() => {router.push("/(pages)/notifications");}}>
               <MaterialIcons name="notifications" size={25} color={Colors.secondary} />
             </Pressable>
@@ -178,19 +190,21 @@ export default function Index() {
                 <MaterialIcons name="arrow-forward-ios" size={15} color={Colors.black} />
               </Pressable>
           </View>
-          <FlatList 
-              ref={recommendRef}
-              data={sampleStores}
-              renderItem={renderStore}
-              keyExtractor={(_, index) => index.toString()}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              ItemSeparatorComponent={() => <View style={{ width: 10 }} />}
-              ListHeaderComponent={<View style={{ width: 30 }} />}
-              ListFooterComponent={<View style={{ width: 10, marginBottom: 10 }} />}
-              onScroll={e => setRecommendOffset(e.nativeEvent.contentOffset.x)}
-              scrollEventThrottle={16}
-          />
+          {stores && (
+            <FlatList 
+                ref={recommendRef}
+                data={stores}
+                renderItem={renderStore}
+                keyExtractor={(_, index) => index.toString()}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                ItemSeparatorComponent={() => <View style={{ width: 10 }} />}
+                ListHeaderComponent={<View style={{ width: 30 }} />}
+                ListFooterComponent={<View style={{ width: 10, marginBottom: 10 }} />}
+                onScroll={e => setRecommendOffset(e.nativeEvent.contentOffset.x)}
+                scrollEventThrottle={16}
+            />
+          )}
 
           {/* For You */}
           <View style={styles.headerRow}>
@@ -199,19 +213,22 @@ export default function Index() {
                 <MaterialIcons name="arrow-forward-ios" size={15} color={Colors.black} />
               </Pressable>
           </View>
-          <FlatList 
-              ref={forYouRef}
-              data={sampleStores}
-              renderItem={renderStore}
-              keyExtractor={(_, index) => index.toString()}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              ItemSeparatorComponent={() => <View style={{ width: 10 }} />}
-              ListHeaderComponent={<View style={{ width: 30 }} />}
-              ListFooterComponent={<View style={{ width: 10, marginBottom: 10 }} />}
-              onScroll={e => setForYouOffset(e.nativeEvent.contentOffset.x)}
-              scrollEventThrottle={16}
-          />
+
+          {stores && (
+            <FlatList 
+                ref={forYouRef}
+                data={stores}
+                renderItem={renderStore}
+                keyExtractor={(_, index) => index.toString()}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                ItemSeparatorComponent={() => <View style={{ width: 10 }} />}
+                ListHeaderComponent={<View style={{ width: 30 }} />}
+                ListFooterComponent={<View style={{ width: 10, marginBottom: 10 }} />}
+                onScroll={e => setForYouOffset(e.nativeEvent.contentOffset.x)}
+                scrollEventThrottle={16}
+            />
+          )}
           <Pressable style={styles.cartButton}  onPress={() => {router.push("/(pages)/cart");}}>
             <MaterialIcons name="shopping-cart" size={30} color={Colors.white} />
           </Pressable>

@@ -1,3 +1,4 @@
+import { getMenu, Menu } from "@/api/store";
 import { SafeAreaView, StyleSheet, ScrollView, View, Pressable, Image, FlatList, ListRenderItem } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -5,13 +6,14 @@ import { Colors } from '@/constants/Colors';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedButton } from '@/components/ThemedButton';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { SearchBar } from '@/components/SearchBar';
 import { HorizontalTags } from "@/components/HorizontalTags";
 import { MenuBlock } from "@/components/MenuBlock";
 import { sampleMenu } from "@/sampleData/sampleMenu";
 
 const width = 412;
+const default_image = require('@/assets/images/default-featured-image.jpg')
 
 const styles = StyleSheet.create({
     headerImg: {
@@ -52,22 +54,43 @@ const styles = StyleSheet.create({
     }
 });
 
-export default function Menu() {
+export default function MenuPage() {
     const { states, image, name , canteen } = useLocalSearchParams();
     const imgUri = Array.isArray(image) ? image[0] : image;
     const isOpen = states === "true";
+    const [searchText, setSearchText] = useState("");
     const [selected, setSelected] = useState<string | null>(null);
     const [menuCounts, setMenuCounts] = useState<{ [key: string]: number }>({});
+    const [menus, setMenus] = useState<Menu[]>([])
 
+    // menu -> tagID -> api -> tag name
     const tags = ["Popular", "Noodle", "Spicy", "Curry", "Dessert", "Sweet", "Soup", "Rice", "Quick", "Egg", "Budget"]
-    const [searchText, setSearchText] = useState("");
 
-    // change sample -> data
+    // menu -> name
+    // menu -> tagID -> api -> menu in tag
+
+    // const filteredMenu = menus.filter(item => {
+    // const matchesSearch = item.Name.toLowerCase().includes(searchText.toLowerCase());
+    // const matchesTag = selected ? item.Tag1ID === selected || item.Tag2ID === selected : true;
+    // return matchesSearch && matchesTag;
+    // });
     const filteredMenu = sampleMenu.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchText.toLowerCase());
     const matchesTag = selected ? item.tag1 === selected || item.tag2 === selected : true;
     return matchesSearch && matchesTag;
     });
+
+    // useEffect(() => {
+    //     const fetchData = async () => {
+    //         try {
+    //         const response = await getMenu();
+    //         setMenus(response);
+    //         } catch (err) {
+    //         console.error(err);
+    //         }
+    //     };
+    //     fetchData();
+    // }, []);
 
     const handleCountChange = (menuName: string, newCount: number) => {
     setMenuCounts(prev => ({
@@ -76,14 +99,14 @@ export default function Menu() {
         }));
     };
 
-    const getMenuLine = () => {
-        return sampleMenu
-        .filter(item => (menuCounts[item.name] ?? 0) > 0)
-        .map(item => ({
-            ...item,
-            quantity: menuCounts[item.name],
-        }));
-    };
+    // const getMenuLine = () => {
+    //     return sampleMenu
+    //     .filter(item => (menuCounts[item.name] ?? 0) > 0)
+    //     .map(item => ({
+    //         ...item,
+    //         quantity: menuCounts[item.name],
+    //     }));
+    // };
 
     return (
         <LinearGradient
@@ -119,6 +142,27 @@ export default function Menu() {
                 onPressTag={(tag) => setSelected(tag === selected ? null : tag)}
             />
         </View>
+        {/* <FlatList
+            data={filteredMenu}
+            keyExtractor={(item, idx) => `${item.Name}-${idx}`}
+            contentContainerStyle={{ alignItems: "center" }}
+            ListFooterComponent={<View style={{marginBottom: 120}}></View>}
+            renderItem={({ item }) => (
+                <MenuBlock
+                name={item.Name}
+                price={item.Price}
+                imageUrl={
+                    item.ImageURL && item.ImageURL.trim() !== ""
+                    ? item.ImageURL
+                    : default_image
+                }
+                tag1={item.Tag1ID}??
+                tag2={item.Tag2ID}??
+                count={menuCounts[item.Name] || 0}
+                onCountChange={handleCountChange}
+                />
+            )}
+        /> */}
         <FlatList
             data={filteredMenu}
             keyExtractor={(item, idx) => `${item.name}-${idx}`}
@@ -127,6 +171,7 @@ export default function Menu() {
             renderItem={({ item }) => (
                 <MenuBlock
                 name={item.name}
+                info={item.info}
                 price={item.price}
                 imageUrl={item.imageUrl}
                 tag1={item.tag1}
