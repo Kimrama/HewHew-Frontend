@@ -1,7 +1,6 @@
 import axios from "axios";
-import Constants from 'expo-constants';
 
-const BASE_URL = Constants.expoConfig?.extra?.VITE_API_URL;
+const BASE_URL = "http://100.79.194.71:9999";
 
 export interface Store {
     Name: string;
