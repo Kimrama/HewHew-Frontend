@@ -11,7 +11,7 @@ import { FlatList, Image, ListRenderItem, Pressable, SafeAreaView, StyleSheet, V
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const width = 350;
-const itemWidth = 360;
+const itemWidth = 370;
 const default_image = require('@/assets/images/default-featured-image.jpg')
 
 
@@ -90,18 +90,22 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 2,
+    elevation: 5,
   }
 });
 
 export default function Index() {
   const insets = useSafeAreaInsets();
+  const fixSupabaseUrl = (url: string | null | undefined) => {
+  if (!url || url.trim() === "") return "";
+    return url.replace("/render/image/", "/object/");
+  };
+
   const renderStore: ListRenderItem<Store> = ({ item }) => {
     const imageSource =
-    item.ImageURL && item.ImageURL.trim() !== ""
-      ? { uri: item.ImageURL } 
-      : default_image;  
-
+      item.ImageURL && item.ImageURL.trim() !== ""
+        ? { uri: fixSupabaseUrl(item.ImageURL) }
+        : default_image;
     return (
       <StoreBlock
         state={item.State}
@@ -111,6 +115,7 @@ export default function Index() {
       />
     );
   };
+
 
   const recommendRef = useRef<FlatList<Store>>(null);
   const forYouRef = useRef<FlatList<Store>>(null);
@@ -178,7 +183,7 @@ export default function Index() {
                 Taste Made Easy,{"\n"}Anytime You Want!
               </ThemedText>
             </View>
-            <Pressable style={styles.orderButton}>
+            <Pressable style={styles.orderButton} onPress={()=>router.push("/(pages)/cart")}>
               <ThemedText type="default" style={{ color: Colors.white }}>Order Now</ThemedText>
             </Pressable>
           </View>
@@ -187,7 +192,7 @@ export default function Index() {
           <View style={styles.headerRow}>
               <ThemedText type="subtitle" style={{ marginTop: 20, marginBottom: 10 }}>Recommend Store</ThemedText>
               <Pressable style={styles.seeAllButton} onPress={handleScrollRecommend}>
-                <MaterialIcons name="arrow-forward-ios" size={15} color={Colors.black} />
+                <MaterialIcons name="arrow-forward" size={20} color={Colors.black} />
               </Pressable>
           </View>
           {stores && (
@@ -198,7 +203,7 @@ export default function Index() {
                 keyExtractor={(_, index) => index.toString()}
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                ItemSeparatorComponent={() => <View style={{ width: 10 }} />}
+                ItemSeparatorComponent={() => <View style={{ width: 15 }} />}
                 ListHeaderComponent={<View style={{ width: 30 }} />}
                 ListFooterComponent={<View style={{ width: 10, marginBottom: 10 }} />}
                 onScroll={e => setRecommendOffset(e.nativeEvent.contentOffset.x)}
@@ -210,7 +215,7 @@ export default function Index() {
           <View style={styles.headerRow}>
               <ThemedText type="subtitle" style={{ marginTop: 20, marginBottom: 10 }}>For You</ThemedText>
               <Pressable style={styles.seeAllButton} onPress={handleScrollForYou}>
-                <MaterialIcons name="arrow-forward-ios" size={15} color={Colors.black} />
+                <MaterialIcons name="arrow-forward" size={20} color={Colors.black} />
               </Pressable>
           </View>
 
@@ -222,13 +227,15 @@ export default function Index() {
                 keyExtractor={(_, index) => index.toString()}
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                ItemSeparatorComponent={() => <View style={{ width: 10 }} />}
+                ItemSeparatorComponent={() => <View style={{ width: 15 }} />}
                 ListHeaderComponent={<View style={{ width: 30 }} />}
                 ListFooterComponent={<View style={{ width: 10, marginBottom: 10 }} />}
                 onScroll={e => setForYouOffset(e.nativeEvent.contentOffset.x)}
                 scrollEventThrottle={16}
             />
           )}
+          
+          {/* cart button */}
           <Pressable style={styles.cartButton}  onPress={() => {router.push("/(pages)/cart");}}>
             <MaterialIcons name="shopping-cart" size={30} color={Colors.white} />
           </Pressable>

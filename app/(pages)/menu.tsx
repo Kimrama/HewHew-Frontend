@@ -5,7 +5,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedButton } from '@/components/ThemedButton';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams, router } from 'expo-router';
 import { useRef, useState, useEffect } from "react";
 import { SearchBar } from '@/components/SearchBar';
 import { HorizontalTags } from "@/components/HorizontalTags";
@@ -51,10 +51,17 @@ const styles = StyleSheet.create({
         top: 55,
         left: 60,
         color: Colors.white
+    },
+    button: {
+        marginVertical: 30,
+        position: 'absolute',
+        left: 30,
+        bottom: 30
     }
 });
 
 export default function MenuPage() {
+    const router = useRouter();
     const { states, image, name , canteen } = useLocalSearchParams();
     const imgUri = Array.isArray(image) ? image[0] : image;
     const isOpen = states === "true";
@@ -182,8 +189,8 @@ export default function MenuPage() {
             )}
         />
 
-        <View style={{marginVertical: 30, position: 'absolute', left: 30, bottom: 30}}>
-            <ThemedButton title="{} รายการ" title2="฿ {}" variant="primary" onPress={() => {}} />
+        <View style={styles.button}>
+            <ThemedButton title="{} รายการ" title2="฿ {}" variant="primary" onPress={() => router.push('/(pages)/cart')} />
         </View>
         </SafeAreaView>
     </LinearGradient>

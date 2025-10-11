@@ -43,7 +43,7 @@ export function SearchBar({
         <TextInput
           style={[styles.input, textStyles.default]}
           placeholder={placeholder}
-          placeholderTextColor={Colors.gray}
+          placeholderTextColor={Colors.gray1}
           editable={false}
           value={value}
           pointerEvents="none"
@@ -64,7 +64,7 @@ export function SearchBar({
       <TextInput
         style={[styles.input, textStyles.default]}
         placeholder={placeholder}
-        placeholderTextColor={Colors.gray}
+        placeholderTextColor={Colors.gray1}
         value={value}
         onChangeText={onChangeText}
       />
@@ -73,7 +73,7 @@ export function SearchBar({
           <MaterialIcons
             name="close"
             size={20}
-            color={Colors.gray}
+            color={Colors.gray1}
           />
         </Pressable>
       )}

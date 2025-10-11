@@ -13,7 +13,9 @@ export const Colors = {
   cream: '#FFE8DB',
   white: '#ffffff',
   black: "#000000",
-  gray: "#656565",
+  gray1: "#656565",
+  gray2: "#D9D9D9",
+  red: "#E96D6D",
   bg: ['#FFE8DB', '#ffffff'] as const,
   light: {
     text: '#11181C',

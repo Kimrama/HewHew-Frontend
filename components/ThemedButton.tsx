@@ -7,7 +7,7 @@ type ThemedButtonProps = {
   title: string;
   title2?: string;
   onPress: () => void;
-  variant?: "primary" | "secondary" | "tertiary" | 'white';
+  variant?: "primary" | "secondary" | 'tertiary';
   style?: ViewStyle;
 };
 

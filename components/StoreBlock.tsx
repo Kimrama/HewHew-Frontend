@@ -76,7 +76,7 @@ export function StoreBlock({
           {name}
         </ThemedText>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <MaterialIcons name="location-pin" size={20} color={Colors.primary} style={{ marginRight: 3 }} />
+          <MaterialIcons name="location-pin" size={15} color={Colors.primary} style={{ marginRight: 3 }} />
           <ThemedText style={{ width: widthSize - 20 }} numberOfLines={1} ellipsizeMode="tail">
             {canteen}
           </ThemedText>

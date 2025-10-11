@@ -1,8 +1,10 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useContext } from "react";
 import { Colors } from '@/constants/Colors';
 import { ThemedText } from "@/components/ThemedText";
 import { MaterialIcons } from '@expo/vector-icons';
 import { View, Image, StyleSheet, Pressable } from "react-native";
+import { Redirect, router } from "expo-router";
+import { AuthContext } from "@/store/auth-context";
 
 type MenuBlockProps = {
   name: string;
@@ -20,6 +22,7 @@ export function MenuBlock({ name, info, price, imageUrl, count, onCountChange }:
   const [isMinus, setIsMinus] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const isDefaultActive = count > 0 && !isActive;
+  const { isAuthenticated, logout, token } = useContext(AuthContext);
 
   const resetTimeout = () => {
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -27,6 +30,9 @@ export function MenuBlock({ name, info, price, imageUrl, count, onCountChange }:
   };
 
   const handleAddPress = () => {
+    if (!isAuthenticated) {
+        return <Redirect href="/(auth)/login" />;
+    }
     if (!isActive && count === 0) {
       // first click
       setIsActive(true);
@@ -110,7 +116,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginVertical: 6,
     marginHorizontal: 10,
-    borderColor: '#D9D9D9',
+    borderColor: Colors.gray2,
     borderWidth: 1,
   },
   image: {

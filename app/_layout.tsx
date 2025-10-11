@@ -20,7 +20,8 @@ export default function RootLayout() {
             <Stack>
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                 <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-                 <Stack.Screen name="(pages)" options={{ headerShown: false }} />
+                <Stack.Screen name="(pages)" options={{ headerShown: false }} />
+                <Stack.Screen name="(status)" options={{ headerShown: false }} />
             </Stack>
         </AuthContextProvider>
     );

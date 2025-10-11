@@ -84,7 +84,7 @@ export default function Search() {
             {/* search bar */}
             <View style={styles.RowSpBw}>
               <Pressable>
-                <MaterialIcons name="arrow-back-ios" size={25} color={Colors.black} onPress={() => router.push("/(tabs)/home")}/>
+                <MaterialIcons name="arrow-back" size={25} color={Colors.black} onPress={() => router.push("/(tabs)/home")}/>
               </Pressable>
               <SearchBar
                 value={searchQuery}
@@ -109,14 +109,14 @@ export default function Search() {
               columnWrapperStyle={{ justifyContent: "space-between", marginBottom: 15 }}
               scrollEnabled={false}
               showsVerticalScrollIndicator={false}
-              ListFooterComponent={<View style={{ height: 50 }} />}
+              ListFooterComponent={<View style={{ marginBottom: 100 }} />}
               
               // ถ้าไม่มีผลลัพธ์ที่ตรง
               ListEmptyComponent={
                 <View style={{ alignItems: "center", marginTop: 20 }}>
                   <Image source={require('@/assets/images/searchStoreNotFound.png')} style={{width: 160, height: 160}}/>
                   <ThemedText type="subtitle" style={{ marginTop: 20 }}>No results found</ThemedText>
-                  <ThemedText style={{marginTop: 10, color: Colors.gray}}>{`Try checking your spelling or
+                  <ThemedText style={{marginTop: 10, color: Colors.gray1}}>{`Try checking your spelling or
 searching for something else.`}</ThemedText>
                 </View>
               }
