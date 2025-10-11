@@ -16,6 +16,22 @@ type StatusBlockProps = {
   type: string;
 };
 
+const statusMap: Record<string, string> = {
+  "delivered": "จัดส่งสำเร็จ",
+  "pending": "รอการจัดส่ง",
+  "searching": "กำลังหาผู้จัดส่ง",
+};
+
+const TypeTextMap: Record<string, string> = {
+  "receiver": "จัดส่งโดย",
+  "rider": "สั่งซื้อโดย"
+}
+
+export const DeliveryMethodMap: Record<string, string> = {
+  "FacetoFace": "Face To Face",
+  "dropOff": "Drop Off"
+}
+
 export function StatusBlock({ name, canteen, store, appointmentTime, deliveryMethod, amount, price, status, type }: StatusBlockProps) {
     const [modalVisible, setModalVisible] = useState(false);
     const [currentStatus, setCurrentStatus] = useState(status);
@@ -28,17 +44,6 @@ export function StatusBlock({ name, canteen, store, appointmentTime, deliveryMet
       case "searching": return Colors.red;
       default: return Colors.gray1;
     }
-  }
-
-  const statusMap: Record<string, string> = {
-    "delivered": "จัดส่งสำเร็จ",
-    "pending": "รอการจัดส่ง",
-    "searching": "กำลังหาผู้จัดส่ง",
-    };
-
-  const TypeTextMap: Record<string, string> = {
-    "receiver": "จัดส่งโดย",
-    "rider": "สั่งซื้อโดย"
   }
 
   return (
@@ -61,7 +66,7 @@ export function StatusBlock({ name, canteen, store, appointmentTime, deliveryMet
             ) : null}
             <View style={styles.row}>
                 <MaterialIcons name='location-pin' size={15} color={Colors.green}></MaterialIcons>
-                <ThemedText style={{ color: Colors.gray1, marginLeft: 10 }}>{canteen}</ThemedText>
+                <ThemedText style={{  marginLeft: 10 }}>{canteen}</ThemedText>
             </View>
 
             {/* <View style={styles.row}>
@@ -71,7 +76,7 @@ export function StatusBlock({ name, canteen, store, appointmentTime, deliveryMet
 
             <View style={styles.row}>
                 <MaterialIcons name='access-time-filled' size={15} color={Colors.green}></MaterialIcons>
-                <ThemedText style={{ color: Colors.gray1, marginLeft: 10 }}>{formatDateTime(appointmentTime)}</ThemedText>
+                <ThemedText style={{  marginLeft: 10 }}>{formatDateTime(appointmentTime)}</ThemedText>
             </View>
 
             <View style={styles.row}>
@@ -82,17 +87,14 @@ export function StatusBlock({ name, canteen, store, appointmentTime, deliveryMet
                     size={15}
                     color={Colors.green}
                 />
-                <ThemedText style={{ color: Colors.gray1, marginLeft: 10 }}>{
-                    deliveryMethod === 'FacetoFace' ? 'Face to Face' :
-                    deliveryMethod === 'dropOff' ? 'Drop Off' : ''}
-                </ThemedText>
+                <ThemedText style={{  marginLeft: 10 }}>{DeliveryMethodMap[deliveryMethod]}</ThemedText>
             </View>  
         </View>
 
-        <ThemedText style={{ marginTop: 6}}>{TypeTextMap[type]} {name}</ThemedText>
+        <ThemedText style={{marginTop: 6}}>{TypeTextMap[type]} {name}</ThemedText>
 
         {/* bottom */}
-        <ThemedText type='defaultSemiBold' style={{marginTop: 6}}>Order Total : ฿ {price}</ThemedText>
+        <ThemedText type='defaultSemiBold' style={{marginTop: 6, fontSize: 16}}>Order Total : ฿ {price}</ThemedText>
     
         {/* status */}
         {type === "rider" && status === 'pending' ? (

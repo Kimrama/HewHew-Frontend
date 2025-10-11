@@ -40,7 +40,7 @@ export const styles = StyleSheet.create<Record<string, TextStyle>>({
     fontSize: 14,
   },
   defaultSemiBold: {
-    fontFamily: "Prompt_500Medium",
+    fontFamily: "Prompt_600SemiBold",
     fontSize: 14,
   },
   titleMd: {

@@ -14,86 +14,6 @@ const width = 350;
 const itemWidth = 370;
 const default_image = require('@/assets/images/default-featured-image.jpg')
 
-
-const styles = StyleSheet.create({
-  brand: {
-    top: 10,
-    fontSize: 30,
-    fontFamily: "KaushanScript_400Regular",
-    color: "#0A6847",
-  },
-  notiButton: {
-    backgroundColor: '#fff',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 2,
-    marginTop: 20,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: width,
-    marginLeft: 30
-  },
-  advert: {
-    marginTop: 20,
-    marginBottom: 10,
-    marginLeft: 30,
-    width: width,
-    height: 150,
-    borderRadius: 20,     
-    overflow: 'hidden',
-    elevation: 5,          
-    position: 'relative', 
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-  },
-  advertText: {
-    position: 'absolute',
-    left: 16,
-    top: 16,
-    color: '#fff',    
-    zIndex: 1,          
-  },
-  orderButton: {
-    position: 'absolute',
-    left: 16,
-    bottom: 16,
-    backgroundColor: Colors.green,
-    borderRadius: 10,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    zIndex: 1,   
-  },
-  seeAllButton: {
-    backgroundColor: '#fff',
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 2,
-  },
-  cartButton: {
-    position: 'absolute',
-    right: 31,
-    bottom: 5,
-    backgroundColor: Colors.primary,
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 5,
-  }
-});
-
 export default function Index() {
   const insets = useSafeAreaInsets();
   const fixSupabaseUrl = (url: string | null | undefined) => {
@@ -244,3 +164,82 @@ export default function Index() {
     </LinearGradient>
   );
 }
+
+const styles = StyleSheet.create({
+  brand: {
+    top: 10,
+    fontSize: 30,
+    fontFamily: "KaushanScript_400Regular",
+    color: "#0A6847",
+  },
+  notiButton: {
+    backgroundColor: '#fff',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 2,
+    marginTop: 20,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: width,
+    marginLeft: 30
+  },
+  advert: {
+    marginTop: 20,
+    marginBottom: 10,
+    marginLeft: 30,
+    width: width,
+    height: 150,
+    borderRadius: 20,     
+    overflow: 'hidden',
+    elevation: 5,          
+    position: 'relative', 
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+  },
+  advertText: {
+    position: 'absolute',
+    left: 16,
+    top: 16,
+    color: '#fff',    
+    zIndex: 1,          
+  },
+  orderButton: {
+    position: 'absolute',
+    left: 16,
+    bottom: 16,
+    backgroundColor: Colors.green,
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    zIndex: 1,   
+  },
+  seeAllButton: {
+    backgroundColor: '#fff',
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 2,
+  },
+  cartButton: {
+    position: 'absolute',
+    right: 31,
+    bottom: 5,
+    backgroundColor: Colors.primary,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
+  }
+});

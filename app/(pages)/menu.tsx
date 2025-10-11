@@ -15,51 +15,6 @@ import { sampleMenu } from "@/sampleData/sampleMenu";
 const width = 412;
 const default_image = require('@/assets/images/default-featured-image.jpg')
 
-const styles = StyleSheet.create({
-    headerImg: {
-        height: 100,
-        width: width,
-        position: "relative"
-    },
-    storeImg: {
-        height: "100%",
-        width: "100%"
-    },
-    Overlay: {
-        height: "100%",
-        width: "100%",
-        position: "absolute",
-        top: 0,
-        left: 0,
-        backgroundColor: "rgba(0,0,0,0.4)"
-    },
-    headerName: {
-        position: "absolute",
-        top: 15,
-        left: 30,
-        color: Colors.white
-    },
-    headerIcon: {
-        color: Colors.secondary,
-        marginRight: 20,
-        position: "absolute",
-        top: 50,
-        left: 30
-    },
-    headerCanteen: {
-        position: "absolute",
-        top: 55,
-        left: 60,
-        color: Colors.white
-    },
-    button: {
-        marginVertical: 30,
-        position: 'absolute',
-        left: 30,
-        bottom: 30
-    }
-});
-
 export default function MenuPage() {
     const router = useRouter();
     const { states, image, name , canteen } = useLocalSearchParams();
@@ -196,3 +151,48 @@ export default function MenuPage() {
     </LinearGradient>
     );
 }
+
+const styles = StyleSheet.create({
+    headerImg: {
+        height: 100,
+        width: width,
+        position: "relative"
+    },
+    storeImg: {
+        height: "100%",
+        width: "100%"
+    },
+    Overlay: {
+        height: "100%",
+        width: "100%",
+        position: "absolute",
+        top: 0,
+        left: 0,
+        backgroundColor: "rgba(0,0,0,0.4)"
+    },
+    headerName: {
+        position: "absolute",
+        top: 15,
+        left: 30,
+        color: Colors.white
+    },
+    headerIcon: {
+        color: Colors.secondary,
+        marginRight: 20,
+        position: "absolute",
+        top: 50,
+        left: 30
+    },
+    headerCanteen: {
+        position: "absolute",
+        top: 55,
+        left: 60,
+        color: Colors.white
+    },
+    button: {
+        marginVertical: 30,
+        position: 'absolute',
+        left: 30,
+        bottom: 30
+    }
+});
