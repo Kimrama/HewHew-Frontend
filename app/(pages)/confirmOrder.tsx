@@ -1,11 +1,12 @@
-import { SafeAreaView, StyleSheet, View, FlatList } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Colors } from '@/constants/Colors';
-import { ThemedText } from '@/components/ThemedText';
-import { useRouter } from 'expo-router';
-import { OrderType, sampleOrder } from '@/sampleData/sampleOrder';
-import { OrderBlock } from '@/components/OrderBlock';
-import { ThemedButton } from '@/components/ThemedButton';
+import { OrderBlock } from "@/components/OrderBlock";
+import { ThemedButton } from "@/components/ThemedButton";
+import { ThemedText } from "@/components/ThemedText";
+import { Colors } from "@/constants/Colors";
+import { OrderType, sampleOrder } from "@/sampleData/sampleOrder";
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
+import { FlatList, StyleSheet, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
 export default function ConfirmOrder() {
@@ -16,7 +17,7 @@ export default function ConfirmOrder() {
       type: "customSuccess",
       text1: "ดำเนินการสำเร็จ!",
       text2: "คุณได้ยืนยันการจัดส่งแล้ว",
-      position: 'top',
+      position: "top",
       visibilityTime: 2000,
       autoHide: true,
       props: { instant: true },
@@ -50,9 +51,13 @@ export default function ConfirmOrder() {
       style={{ flex: 1 }}
     >
       <SafeAreaView style={{ flex: 1, paddingHorizontal: 31, paddingTop: 20 }}>
-        
         {/* Header */}
-        <View style={[styles.row, { justifyContent: 'space-between', paddingBottom: 10 }]}>
+        <View
+          style={[
+            styles.row,
+            { justifyContent: "space-between", paddingBottom: 10 },
+          ]}
+        >
           <View style={styles.canteen}>
             <ThemedText>{sampleOrder[0].canteen}</ThemedText>
           </View>
@@ -99,7 +104,7 @@ export default function ConfirmOrder() {
                   borderRadius: 12,
                   padding: 16,
                   width: 350,
-                  alignSelf: 'center',
+                  alignSelf: "center",
                   shadowColor: "#000",
                   shadowOpacity: 0.2,
                   shadowOffset: { width: 0, height: 2 },
@@ -107,7 +112,7 @@ export default function ConfirmOrder() {
                   elevation: 3,
                 }}
               >
-                <ThemedText type='subtitle'>{text1}</ThemedText>
+                <ThemedText type="subtitle">{text1}</ThemedText>
                 <ThemedText>{text2}</ThemedText>
               </View>
             ),
@@ -120,22 +125,22 @@ export default function ConfirmOrder() {
 
 const styles = StyleSheet.create({
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   canteen: {
     height: 25,
     paddingHorizontal: 10,
     borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     borderColor: Colors.primary,
     borderWidth: 1,
     backgroundColor: Colors.white,
   },
   button: {
     marginVertical: 30,
-    position: 'absolute',
+    position: "absolute",
     left: 30,
     bottom: 30,
   },
