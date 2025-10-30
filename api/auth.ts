@@ -4,8 +4,9 @@ import {
   UserSignIn,
   UserSignUp,
 } from "@/types/user";
-import { EXPO_API } from "@env";
+
 import axios from "axios";
+import EXPO_API from "./url";
 
 export async function signIn(userData: UserSignIn): Promise<singInResponse> {
   const { data } = await axios.post(`${EXPO_API}/v1/user/login`, userData);

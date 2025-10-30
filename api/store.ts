@@ -2,6 +2,8 @@ import { EXPO_API } from "@env";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 
+import EXPO_API from "./url";
+
 export interface Store {
   ShopID: string;
   Adress: string;
