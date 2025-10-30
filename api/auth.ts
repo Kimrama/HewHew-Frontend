@@ -4,8 +4,9 @@ import {
   UserSignIn,
   UserSignUp,
 } from "@/types/user";
-import { EXPO_API } from "@env";
+
 import axios from "axios";
+import EXPO_API from "./url";
 
 export async function signIn(userData: UserSignIn): Promise<singInResponse> {
   const { data } = await axios.post(`${EXPO_API}/v1/user/login`, userData);
@@ -30,7 +31,7 @@ export async function signUp(
       type,
     } as any);
   }
-  const { data } = await axios.post(`http://100.79.194.71:9999/v1/user/register`, formData, {
+  const { data } = await axios.post(`${EXPO_API}/v1/user/register`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
