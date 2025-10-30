@@ -2,6 +2,7 @@ import { Colors } from "@/constants/Colors";
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ThemedText } from "@/components/ThemedText";
 
 export default function TabsLayout() {
     const insets = useSafeAreaInsets();
@@ -26,7 +27,7 @@ export default function TabsLayout() {
             <Tabs.Screen
                 name="home/index"
                 options={{
-                    title: "Home",
+                    tabBarLabel: ({ focused, color }) => (<ThemedText style={{color: color}}>Home</ThemedText>),
                     tabBarIcon: ({ color, size, focused }) => (
                         <Ionicons
                             name={focused ? "home" : "home-outline"}
@@ -39,7 +40,7 @@ export default function TabsLayout() {
             <Tabs.Screen
                 name="order/index"
                 options={{
-                    title: "Order",
+                    tabBarLabel: ({ focused, color }) => (<ThemedText style={{color: color}}>Order</ThemedText>),
                     tabBarIcon: ({ color, size, focused }) => (
                         <Ionicons
                             name={focused ? "receipt" : "receipt-outline"}
@@ -52,7 +53,7 @@ export default function TabsLayout() {
             <Tabs.Screen
                 name="payment/index"
                 options={{
-                    title: "Payment",
+                    tabBarLabel: ({ focused, color }) => (<ThemedText style={{color: color}}>Payment</ThemedText>),
                     tabBarIcon: ({ color, size, focused }) => (
                         <Ionicons
                             name={focused ? "wallet" : "wallet-outline"}
@@ -65,7 +66,7 @@ export default function TabsLayout() {
             <Tabs.Screen
                 name="profile/index"
                 options={{
-                    title: "Profile",
+                    tabBarLabel: ({ focused, color }) => (<ThemedText style={{color: color}}>Home</ThemedText>),
                     tabBarIcon: ({ color, size, focused }) => (
                         <Ionicons
                             name={focused ? "person" : "person-outline"}

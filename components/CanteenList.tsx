@@ -1,8 +1,8 @@
+import { getCanteen, Canteen } from "@/api/store";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
-import { sampleStores } from "@/sampleData/sample";
 import { MaterialIcons } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
 
 type CanteenListProps = {
@@ -12,10 +12,23 @@ type CanteenListProps = {
 export const CanteenList: React.FC<CanteenListProps> = ({ onSelect }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [selectedCanteen, setSelectedCanteen] = useState<string | null>(null);
+  const [canteens, setCanteens] = useState<Canteen[]>([])
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await getCanteen();
+        setCanteens(response);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchData();
+  }, []);
 
   const uniqueCanteens = Array.from(
-    new Set(sampleStores.map((s) => s.canteen))
-  ).map((canteen) => ({ canteen }));
+    new Set(canteens.map((c) => c.CanteenName))
+  ).map((CanteenName) => ({ canteen: CanteenName }));
 
   const toggleExpand = () => {
     setIsExpanded((prev) => !prev);
@@ -106,7 +119,7 @@ const styles = StyleSheet.create({
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      width: 335,
+      width: 350,
     },
     Row: {
       flexDirection: 'row',
@@ -115,7 +128,7 @@ const styles = StyleSheet.create({
       paddingVertical: 10
     },
     Selected: {
-      width: 335,
+      width: 350,
       flexDirection: 'row',
       justifyContent: 'flex-start',
       alignItems: 'center',

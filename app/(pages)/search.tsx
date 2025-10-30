@@ -6,12 +6,14 @@ import { ThemedText } from '@/components/ThemedText';
 import { SearchBar } from '@/components/SearchBar';
 import { StoreBlock } from '@/components/StoreBlock';
 import { useRouter } from 'expo-router';
-import { sampleStores } from "@/sampleData/sample";
 import { CanteenList } from "@/components/CanteenList";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
+import { getStore, Store } from "@/api/store";
 
-const width = 335;
+const width = 350;
 const router = useRouter();
+const default_image = require('@/assets/images/default-featured-image.jpg')
+
 
 const styles = StyleSheet.create({
   RowSpBw: {
@@ -23,22 +25,48 @@ const styles = StyleSheet.create({
 });
 
 export default function Search() {
-  const renderStore: ListRenderItem<typeof sampleStores[0]> = ({ item }) => (
-    <StoreBlock {...item} widthSize={155} heightSize={130}/>
-  );
-
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCanteen, setSelectedCanteen] = useState<string | null>(null);
+  const [stores, setStores] = useState<Store[]>([])
 
-  const filteredStores = sampleStores.filter((store) => {
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await getStore();
+        setStores(response);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const renderStore: ListRenderItem<Store> = ({ item }) => {
+    const imageSource =
+    item.ImageURL && item.ImageURL.trim() !== ""
+      ? { uri: item.ImageURL } 
+      : default_image;  
+
+    return (
+      <StoreBlock
+        state={item.State}
+        image={imageSource}
+        name={item.Name}
+        canteen={item.CanteenName}
+        widthSize={165}
+        heightSize={130}
+      />
+    );
+  };
+
+  const filteredStores = stores.filter((store) => {
     const matchesSearch =
       searchQuery === "" ||
-      store.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      store.canteen.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      store.menus.some((f) => f.name.toLowerCase().includes(searchQuery.toLowerCase()));
+      store.Name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      store.CanteenName.toLowerCase().includes(searchQuery.toLowerCase()) //||
 
     const matchesCanteen =
-      !selectedCanteen || store.canteen === selectedCanteen;
+      !selectedCanteen || store.CanteenName === selectedCanteen;
 
     return matchesSearch && matchesCanteen;
   });
@@ -56,7 +84,7 @@ export default function Search() {
             {/* search bar */}
             <View style={styles.RowSpBw}>
               <Pressable>
-                <MaterialIcons name="arrow-back-ios" size={25} color={Colors.black} onPress={() => router.push("/(tabs)/home")}/>
+                <MaterialIcons name="arrow-back" size={25} color={Colors.black} onPress={() => router.push("/(tabs)/home")}/>
               </Pressable>
               <SearchBar
                 value={searchQuery}
@@ -76,18 +104,19 @@ export default function Search() {
             <FlatList style={{width: width}}
               data={filteredStores}
               renderItem={renderStore}
-              keyExtractor={(item, index) => item.name + index}
+              keyExtractor={(item, index) => item.Name + index}
               numColumns={2}
               columnWrapperStyle={{ justifyContent: "space-between", marginBottom: 15 }}
               scrollEnabled={false}
               showsVerticalScrollIndicator={false}
-              ListFooterComponent={<View style={{ height: 50 }} />}
+              ListFooterComponent={<View style={{ marginBottom: 100 }} />}
+              
               // ถ้าไม่มีผลลัพธ์ที่ตรง
               ListEmptyComponent={
                 <View style={{ alignItems: "center", marginTop: 20 }}>
                   <Image source={require('@/assets/images/searchStoreNotFound.png')} style={{width: 160, height: 160}}/>
                   <ThemedText type="subtitle" style={{ marginTop: 20 }}>No results found</ThemedText>
-                  <ThemedText style={{marginTop: 10, color: Colors.gray}}>{`Try checking your spelling or
+                  <ThemedText style={{marginTop: 10, color: Colors.gray1}}>{`Try checking your spelling or
 searching for something else.`}</ThemedText>
                 </View>
               }

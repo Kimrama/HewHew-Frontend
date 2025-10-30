@@ -1,8 +1,9 @@
 import { AuthContext } from "@/store/auth-context";
 import { Redirect, router } from "expo-router";
 import { useContext } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Pressable, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Colors } from "@/constants/Colors";
 
 export default function Index() {
     const { isAuthenticated, logout, token } = useContext(AuthContext);
@@ -25,6 +26,14 @@ export default function Index() {
             <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
                 <Text style={styles.logoutButtonText}>Logout</Text>
             </TouchableOpacity>
+
+            <Pressable style={styles.button} onPress={() => {router.push("/(pages)/myOrder");}}>
+                <Text>my Order</Text>
+            </Pressable>
+
+            <Pressable style={styles.button} onPress={() => {router.push("/(pages)/myDelivery");}}>
+                <Text>my Delivery</Text>
+            </Pressable>
         </View>
     );
 }
@@ -58,4 +67,13 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: "bold",
     },
+    button: {
+        color: Colors.white,
+        borderColor: Colors.primary,
+        borderWidth: 1,
+        borderRadius: 10,
+        paddingVertical: 4,
+        paddingHorizontal: 6,
+        marginTop: 10
+    }
 });
