@@ -1,8 +1,9 @@
-import { SafeAreaView, StyleSheet, FlatList, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Colors } from '@/constants/Colors';
 import { StatusBlock } from "@/components/StatusBlock";
+import { Colors } from "@/constants/Colors";
 import { sampleStatus } from "@/sampleData/sampleStatus";
+import { LinearGradient } from "expo-linear-gradient";
+import { FlatList, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function myOrder() {
   return (
@@ -12,13 +13,13 @@ export default function myOrder() {
       end={{ x: 0, y: 1 }}
       style={{ flex: 1 }}
     >
-      <SafeAreaView style={{ flex: 1 , alignItems: 'center'}}>
+      <SafeAreaView style={{ flex: 1, alignItems: "center" }}>
         <FlatList
           data={sampleStatus}
           keyExtractor={(item, index) => `${item.name}-${index}`}
           contentContainerStyle={{ paddingVertical: 10 }}
           showsVerticalScrollIndicator={false}
-          ListFooterComponent={<View style={{marginBottom: 50}}></View>}
+          ListFooterComponent={<View style={{ marginBottom: 50 }}></View>}
           renderItem={({ item }) => (
             <StatusBlock
               name={item.name}
@@ -29,7 +30,7 @@ export default function myOrder() {
               amount={item.amount}
               price={item.price}
               status={item.status}
-              type='receiver'
+              type="receiver"
             />
           )}
         />
