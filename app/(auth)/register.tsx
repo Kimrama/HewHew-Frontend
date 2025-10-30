@@ -1,0 +1,336 @@
+import { signUp } from "@/api/auth";
+import { singUpResponse } from "@/types/user";
+import Ionicons from "@expo/vector-icons/build/Ionicons";
+import * as ImagePicker from "expo-image-picker";
+import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
+import { useState } from "react";
+import {
+  Alert,
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { UserSignUp } from "../../types/user";
+export default function Register() {
+  const [userInput, setUserInput] = useState<UserSignUp>({
+    username: "",
+    firstName: "",
+    lastName: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [imageUri, setImageUri] = useState<string | null>(null);
+
+  const pickImage = async () => {
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
+      alert("Permission to access camera roll is required!");
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      setImageUri(result.assets[0].uri);
+    }
+  };
+
+  const handleSignUp = async () => {
+    // Basic validation
+    if (
+      !userInput.username ||
+      !userInput.firstName ||
+      !userInput.lastName ||
+      !userInput.password ||
+      !userInput.confirmPassword
+    ) {
+      Alert.alert("Sign Up Error", "Please fill in all fields.");
+      return;
+    }
+    if (userInput.password !== userInput.confirmPassword) {
+      Alert.alert("Sign Up Error", "Passwords do not match.");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const data: singUpResponse = await signUp(
+        userInput,
+        imageUri || undefined
+      );
+      if (data.message) {
+        Alert.alert("Success", "Registration successful! Please log in.", [
+          { text: "OK", onPress: () => router.replace("/(auth)/login") },
+        ]);
+      } else {
+        Alert.alert("Sign Up Error", data.error || "Registration failed.");
+      }
+    } catch (error: any) {
+      Alert.alert(
+        "Sign Up Error",
+        error.response?.data?.error || "An error occurred. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <ScrollView style={styles.container}>
+      <View style={styles.titleContainer}>
+        <Pressable
+          onPress={() => router.replace("/(auth)/login")}
+          style={{ position: "absolute", top: 40, left: 20 }}
+        >
+          <Ionicons name="chevron-back-outline" size={24} color="black" />
+        </Pressable>
+        <Text style={styles.title}>Sign Up</Text>
+      </View>
+      <LinearGradient
+        colors={["#FFE8DB", "#FFFFFF"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={styles.gradient}
+      >
+        <View style={styles.pictureContainer}>
+          <Pressable style={styles.picture} onPress={pickImage}>
+            {imageUri ? (
+              <Image source={{ uri: imageUri }} style={styles.picturePreview} />
+            ) : (
+              <Image
+                source={require("@/assets/images/upload-image.png")}
+                style={{
+                  width: 130,
+                  height: 130,
+                  position: "relative",
+                  left: 8,
+                }}
+              />
+            )}
+            <View style={styles.uploadOverlay}>
+              <Text style={styles.uploadText}>Upload</Text>
+            </View>
+          </Pressable>
+        </View>
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Username</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Username"
+            value={userInput.username}
+            onChangeText={(text) =>
+              setUserInput({ ...userInput, username: text })
+            }
+          />
+          <Text style={styles.label}>First Name</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="First Name"
+            value={userInput.firstName}
+            onChangeText={(text) =>
+              setUserInput({ ...userInput, firstName: text })
+            }
+          />
+          <Text style={styles.label}>Last Name</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Last Name"
+            value={userInput.lastName}
+            onChangeText={(text) =>
+              setUserInput({ ...userInput, lastName: text })
+            }
+          />
+          <Text style={styles.label}>Password</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            value={userInput.password}
+            onChangeText={(text) =>
+              setUserInput({ ...userInput, password: text })
+            }
+            secureTextEntry={true}
+          />
+          <Text style={styles.label}>Confirm Password</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Confirm Password"
+            value={userInput.confirmPassword}
+            onChangeText={(text) =>
+              setUserInput({ ...userInput, confirmPassword: text })
+            }
+            secureTextEntry={true}
+          />
+        </View>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={[styles.button, isLoading && styles.buttonDisabled]}
+            onPress={handleSignUp}
+            disabled={isLoading}
+          >
+            <LinearGradient
+              colors={["#0A6847", "#7ABA78"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.buttonGradient}
+            >
+              <Text style={styles.buttonText}>
+                {isLoading ? "Signing up..." : "Sign Up"}
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
+          <View style={styles.line} />
+
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "center",
+              marginTop: 20,
+            }}
+          >
+            <Text style={{ textAlign: "center", alignItems: "center" }}>
+              Already have an account?{" "}
+            </Text>
+            <Pressable
+              style={{
+                alignItems: "center",
+                borderBottomWidth: 1,
+                borderColor: "#0A6847",
+              }}
+              onPress={() => router.replace("/(auth)/register")}
+            >
+              <Text style={{ color: "#0A6847" }}>Sign in here</Text>
+            </Pressable>
+          </View>
+        </View>
+      </LinearGradient>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    marginBottom: 40,
+  },
+  titleContainer: {
+    height: 80,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#ffffff",
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    position: "relative",
+    bottom: -10,
+  },
+  gradient: {
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+
+    flex: 1,
+  },
+  buttonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  pictureContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  picture: {
+    width: 235,
+    height: 235,
+    borderRadius: "100%",
+    backgroundColor: "#D9D9D9",
+    borderWidth: 1,
+    borderColor: "#6E6E6E",
+    marginTop: 50,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+  },
+
+  picturePreview: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: 235,
+    height: 235,
+    borderRadius: 117.5,
+    resizeMode: "cover",
+  },
+
+  uploadOverlay: {
+    position: "absolute",
+    bottom: 10,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+  },
+  uploadText: {
+    backgroundColor: "rgba(0,0,0,0.5)",
+    color: "white",
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    fontSize: 14,
+    overflow: "hidden",
+  },
+
+  inputContainer: {
+    marginTop: 20,
+    marginBottom: 50,
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 5,
+  },
+  input: {
+    width: "100%",
+    borderWidth: 1,
+    borderColor: "#ABABAB",
+    padding: 15,
+    marginBottom: 15,
+    borderRadius: 18,
+    fontSize: 16,
+    backgroundColor: "white",
+  },
+  buttonContainer: {
+    // position: "absolute",
+    // bottom: 100,
+    // left: 0,
+    // right: 0,
+    // zIndex: 2,
+    // paddingHorizontal: 20,
+  },
+  buttonGradient: {
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  button: {
+    marginBottom: 20,
+  },
+  line: {
+    borderBottomColor: "black",
+    borderBottomWidth: 1,
+    width: "100%",
+  },
+  buttonDisabled: {
+    backgroundColor: "#ccc",
+  },
+});

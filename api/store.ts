@@ -1,0 +1,62 @@
+import { EXPO_API } from "@env";
+import axios from "axios";
+import * as SecureStore from "expo-secure-store";
+
+export interface Store {
+  ShopID: string;
+  Adress: string;
+  CanteenName: string;
+  ImageURL: string | null;
+  Name: string;
+  State: boolean;
+}
+
+export interface Canteen {
+  CanteenName: string;
+  Latitude: string;
+  Longitude: string;
+  Shops: null;
+}
+
+export interface Menu {
+  MenuID: string;
+  shopID: string;
+  Name: string;
+  Detail: string;
+  Price: number;
+  Status: string; //available, unavailable
+  ImageURL: string | null;
+  Favourite: null;
+  MenuQuantity: null;
+  Tag1ID: string;
+  Tag2ID: string;
+}
+
+export async function getStore(): Promise<Store[]> {
+  const { data } = await axios.get(`${EXPO_API}/v1/user/shop`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${SecureStore.getItem("token")}`,
+    },
+  });
+  return data.shops;
+}
+
+export async function getCanteen(): Promise<Canteen[]> {
+  const { data } = await axios.get(`${EXPO_API}/v1/canteens`, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  return data.canteens;
+}
+
+export async function getMenu(): Promise<Menu[]> {
+  const { data } = await axios.get(`${EXPO_API}/v1/menu`, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  console.log(data);
+  return data;
+}
