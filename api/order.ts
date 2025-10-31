@@ -10,41 +10,24 @@ export interface User {
   profile_image_url: string;
 }
 
-export interface MenuQuantity {
-  MenuQuantityID: string;
-  MenuID: string;
-  OrderID: string;
-  Quantity: number;
-}
-
-export interface TransactionLog {
-  TransactionLogID: string;
-  TargetUserID: string;
-  OrderID: string;
-  TimeStamp: string;
-  Detail: string;
-  Amount: number;
+export interface menu_quantity {
+  menu_id: string;
+  quantity: number;
 }
 
 export interface Order {
-  OrderID: string;
-  UserOrderID: string;
-  UserDeliveryID: string;
-  Status: string;
-  OrderDate: string;
-  DeliveryMethod: string;
-  ConfirmationImageURL: string;
-  AppointmentTime: string;
-  DropOffLocationID: string;
-  MenuQuantity: MenuQuantity[];
-  TransactionLog: TransactionLog;
-  Notifications: string | null;
-  Chats: string | null;
-}
-
-export interface OrderbyId {
+  order_id: string;
+  user_order_id: string;
+  user_delivery_id: string;
+  status: string;
+  order_date: string;
+  delivery_method: string;
+  appointment_time: string;
+  menu_quantity: menu_quantity[];
+  amount: number;
   shop_name: string;
   canteen_name: string;
+  shipping_fee: string;
 }
 
 export async function getOrder(): Promise<Order[]> {
@@ -68,18 +51,7 @@ export async function getUserbyId(UserId: string): Promise<User> {
   return data;
 }
 
-export async function getOrderbyId(UserId: string): Promise<OrderbyId> {
-  const token = await SecureStore.getItem("token");
-  const { data } = await axios.get(`${EXPO_API}/v1/order/${UserId}`, {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  return data;
-}
-
-export async function getMyDelivery(): Promise<(Order & { User?: User } & {OrderbyId?: OrderbyId})[]> {
+export async function getMyDelivery(): Promise<(Order & { User?: User })[]> {
   const token = await SecureStore.getItem("token");
 
   const { data } = await axios.get(`${EXPO_API}/v1/order/delivery`, {
@@ -94,11 +66,10 @@ export async function getMyDelivery(): Promise<(Order & { User?: User } & {Order
   const results = await Promise.all(
   orders.map(async (order) => {
     try {
-      const user = await getUserbyId(order.UserOrderID);
-      const orderById = await getOrderbyId(order.OrderID);
-      return { ...order, User: user, OrderbyId: orderById };
+      const user = await getUserbyId(order.user_order_id);
+      return { ...order, User: user };
     } catch (err) {
-      console.error(`Fetch user failed for ${order.UserOrderID}:`, err);
+      console.error(`Fetch user failed for ${order.user_order_id}:`, err);
       return { ...order, User: undefined, OrderbyId: undefined };
     }
   })
