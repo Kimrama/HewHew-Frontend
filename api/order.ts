@@ -1,6 +1,6 @@
 import axios from "axios";
-import EXPO_API from "./url";
 import * as SecureStore from "expo-secure-store";
+import EXPO_API from "./url";
 
 export interface User {
   username: string;

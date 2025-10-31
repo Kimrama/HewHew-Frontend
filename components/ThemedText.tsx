@@ -1,10 +1,16 @@
-import { StyleSheet, Text, type TextProps, TextStyle } from "react-native";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import { StyleSheet, Text, type TextProps, TextStyle } from "react-native";
 
 export type ThemedTextProps = TextProps & {
   lightColor?: string;
   darkColor?: string;
-  type?: "default" | "titleLarge" | "titleMd" |"defaultSemiBold" | "subtitle" | "link";
+  type?:
+    | "default"
+    | "titleLarge"
+    | "titleMd"
+    | "defaultSemiBold"
+    | "subtitle"
+    | "link";
 };
 
 export function ThemedText({
@@ -26,13 +32,12 @@ export function ThemedText({
         type === "subtitle" ? styles.subtitle : undefined,
         type === "link" ? styles.link : undefined,
         { color },
-        style, 
+        style,
       ]}
       {...rest}
     />
   );
 }
-
 
 export const styles = StyleSheet.create<Record<string, TextStyle>>({
   default: {

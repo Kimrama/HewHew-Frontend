@@ -1,5 +1,5 @@
 {
-  "name": "my-app",
+  "name": "hewhew-frontend",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
@@ -26,6 +26,8 @@
     "expo-image-picker": "^17.0.8",
     "expo-linear-gradient": "^15.0.7",
     "expo-linking": "~8.0.8",
+    "expo-location": "^19.0.7",
+    "expo-maps": "~0.12.8",
     "expo-router": "~6.0.13",
     "expo-secure-store": "^15.0.7",
     "expo-splash-screen": "~31.0.10",
@@ -42,12 +44,14 @@
     "react-native-screens": "~4.16.0",
     "react-native-toast-message": "^2.3.3",
     "react-native-web": "~0.21.0",
+    "react-native-webview": "13.15.0",
     "react-native-worklets": "0.5.1"
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
+    "expo-module-scripts": "^5.0.7",
     "typescript": "~5.9.2"
   },
   "private": true

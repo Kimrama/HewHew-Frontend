@@ -1,5 +1,5 @@
 import * as SecureStore from "expo-secure-store";
-import { createContext, useEffect, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
 
 type AuthContextType = {
   token: string | null;
@@ -63,7 +63,9 @@ export default function AuthContextProvider({
     logout,
   };
 
-  return (
-    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
+  return React.createElement(
+    AuthContext.Provider,
+    { value: contextValue },
+    children
   );
 }
