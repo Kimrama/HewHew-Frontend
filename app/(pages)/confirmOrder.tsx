@@ -4,7 +4,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
 import { OrderType, sampleOrder } from "@/sampleData/sampleOrder";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { FlatList, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -50,7 +50,7 @@ export default function ConfirmOrder() {
       end={{ x: 0, y: 1 }}
       style={{ flex: 1 }}
     >
-      <SafeAreaView style={{ flex: 1, paddingHorizontal: 31, paddingTop: 20 }}>
+      <SafeAreaView style={{ flex: 1, paddingHorizontal: 31, paddingTop: 10 }}>
         {/* Header */}
         <View
           style={[
@@ -69,7 +69,7 @@ export default function ConfirmOrder() {
           data={sampleOrder}
           keyExtractor={(_, index) => index.toString()}
           renderItem={renderItem}
-          contentContainerStyle={{ paddingBottom: 120 }}
+          contentContainerStyle={{ paddingBottom: 80 }}
           showsVerticalScrollIndicator={false}
           ItemSeparatorComponent={() => (
             <View

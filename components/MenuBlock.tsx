@@ -31,8 +31,10 @@ export function MenuBlock({ name, info, price, imageUrl, count, onCountChange }:
 
   const handleAddPress = () => {
     if (!isAuthenticated) {
-        return <Redirect href="/(auth)/login" />;
+        router.push("/(auth)/login");
+        return;
     }
+
     if (!isActive && count === 0) {
       // first click
       setIsActive(true);
@@ -42,7 +44,7 @@ export function MenuBlock({ name, info, price, imageUrl, count, onCountChange }:
     } else if (!isActive && count > 0) {
       // reopen row
       setIsActive(true);
-      setIsMinus(true);
+      setIsMinus(count > 1);
       resetTimeout();
     } else {
       // in row

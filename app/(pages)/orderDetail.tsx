@@ -22,7 +22,7 @@ export default function OrderDetail() {
       end={{ x: 0, y: 1 }}
       style={{ flex: 1 }}
     >
-      <SafeAreaView style={{ flex: 1, paddingHorizontal: 31, paddingTop: 20 }}>
+      <SafeAreaView style={{ flex: 1, paddingHorizontal: 31, paddingTop: 10 }}>
         {/* header */}
         <View
           style={[
@@ -63,7 +63,14 @@ export default function OrderDetail() {
           <ThemedButton
             title="เพิ่มรายการคำสั่งซื้อ"
             variant="primary"
-            onPress={() => router.push("/(tabs)/order")}
+            onPress={() => {
+              router.push({
+                pathname: "/(pages)/cart",
+                params: {
+                  orderId: order.id,
+                },
+              });
+            }}
           />
         </View>
       </SafeAreaView>

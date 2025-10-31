@@ -19,7 +19,7 @@ export default function myOrder() {
           keyExtractor={(item, index) => `${item.name}-${index}`}
           contentContainerStyle={{ paddingVertical: 10 }}
           showsVerticalScrollIndicator={false}
-          ListFooterComponent={<View style={{ marginBottom: 50 }}></View>}
+          // ListFooterComponent={<View style={{ marginBottom: 50 }}></View>}
           renderItem={({ item }) => (
             <StatusBlock
               name={item.name}

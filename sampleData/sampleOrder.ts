@@ -5,6 +5,7 @@ export type MenuItem = {
 }
 
 export type OrderType = {
+  id: string;
   store: string;
   amount: number;
   canteen: string;
@@ -19,6 +20,7 @@ export type OrderType = {
 
 export const sampleOrder: OrderType[] = [
   {
+    id: '1',
     store: "ชาบูบ้านเพื่อน",
     amount: 2,
     canteen: "ศูนย์อาหารกลาง",
@@ -34,6 +36,7 @@ export const sampleOrder: OrderType[] = [
     riderEarn: 0
   },
   {
+    id: '2',
     store: "ก๋วยเตี๋ยวเรืออยุธยา",
     amount: 4,
     canteen: "โรงอาหารคณะวิศวกรรม",

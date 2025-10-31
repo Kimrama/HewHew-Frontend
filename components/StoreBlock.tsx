@@ -5,6 +5,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { useRouter } from "expo-router";
 
 type StoreBlockProps = {
+  storeId: string;
   state: boolean;
   image: { uri: string };
   name: string;
@@ -14,6 +15,7 @@ type StoreBlockProps = {
 };
 
 export function StoreBlock({
+  storeId,
   state,
   image,
   name,
@@ -26,12 +28,7 @@ export function StoreBlock({
   const handlePress = () => {
     router.push({
       pathname: "/(pages)/menu",
-      params: {
-        states: state ? "true" : "false",
-        image: image.uri,
-        name,
-        canteen,
-      },
+      params: { storeId },
     });
   };        
 
