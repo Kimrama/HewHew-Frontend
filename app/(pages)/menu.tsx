@@ -1,4 +1,4 @@
-import { Menu } from "@/api/store";
+import { getStorebyId, Store, getMenubyId, Menu } from "@/api/store";
 import { HorizontalTags } from "@/components/HorizontalTags";
 import { MenuBlock } from "@/components/MenuBlock";
 import { SearchBar } from "@/components/SearchBar";
@@ -9,8 +9,9 @@ import { sampleMenu } from "@/sampleData/sampleMenu";
 import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import React, { useState, useRef, useContext, useEffect } from "react";
 import { FlatList, Image, StyleSheet, View } from "react-native";
+import { AuthContext } from "@/store/auth-context";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const width = 412;
@@ -18,58 +19,92 @@ const default_image = require("@/assets/images/default-featured-image.jpg");
 
 export default function MenuPage() {
   const router = useRouter();
-  const { states, image, name, canteen } = useLocalSearchParams();
-  const imgUri = Array.isArray(image) ? image[0] : image;
-  const isOpen = states === "true";
+  const { storeId } = useLocalSearchParams();
+  const [stores, setStores] = useState<Store>();
+  // const imgUri = Array.isArray(image) ? image[0] : image;
+  // const isOpen = states === "true";
   const [searchText, setSearchText] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
   const [menuCounts, setMenuCounts] = useState<{ [key: string]: number }>({});
   const [menus, setMenus] = useState<Menu[]>([]);
+  const { isAuthenticated, logout, token } = useContext(AuthContext);
+  const fixSupabaseUrl = (url: string | null | undefined) => {
+    if (!url || url.trim() === "") return "";
+    return url.replace("/render/image/", "/object/");
+  };
+  const imageSource = stores?.shop_image_url && stores?.shop_image_url.trim() !== ""
+        ? { uri: fixSupabaseUrl(stores?.shop_image_url) }
+        : default_image;
 
-  // menu -> tagID -> api -> tag name
-  const tags = [
-    "Popular",
-    "Noodle",
-    "Spicy",
-    "Curry",
-    "Dessert",
-    "Sweet",
-    "Soup",
-    "Rice",
-    "Quick",
-    "Egg",
-    "Budget",
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        if (!storeId) return;
+        const id = Array.isArray(storeId) ? storeId[0] : storeId;
+        const response = await getStorebyId(id);
+        console.log(response)
 
-  // menu -> name
-  // menu -> tagID -> api -> menu in tag
 
-  // const filteredMenu = menus.filter(item => {
-  // const matchesSearch = item.Name.toLowerCase().includes(searchText.toLowerCase());
-  // const matchesTag = selected ? item.Tag1ID === selected || item.Tag2ID === selected : true;
-  // return matchesSearch && matchesTag;
-  // });
-  const filteredMenu = sampleMenu.filter((item) => {
+        setStores(response);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchData();
+  }, [storeId]);
+
+  useEffect(() => {
+    const fetchMenus = async () => {
+      try {
+        if (!stores?.menus || stores.menus.length === 0) {
+          console.log("No menus found for this store");
+          return;
+        }
+
+        console.log("Fetching menus for IDs:", stores.menus);
+
+        const menuDetails = await Promise.all(
+          stores.menus.map((id: string) => getMenubyId(id))
+        );
+
+        console.log("menuDetails:", menuDetails);
+        setMenus(menuDetails);
+      } catch (err) {
+        console.error("Error fetching menus:", err);
+      }
+    };
+    fetchMenus();
+  }, [stores]);
+
+    const filteredMenu = menus.filter((item) => {
     const matchesSearch = item.name
-      .toLowerCase()
+      ?.toLowerCase()
       .includes(searchText.toLowerCase());
+
     const matchesTag = selected
-      ? item.tag1 === selected || item.tag2 === selected
+      ? item.tag1_id === selected || item.tag2_id === selected
       : true;
+
     return matchesSearch && matchesTag;
   });
 
-  // useEffect(() => {
-  //     const fetchData = async () => {
-  //         try {
-  //         const response = await getMenu();
-  //         setMenus(response);
-  //         } catch (err) {
-  //         console.error(err);
-  //         }
-  //     };
-  //     fetchData();
-  // }, []);
+
+  const clickButton = () => {
+    if (!isAuthenticated) {
+        router.push("/(auth)/login");
+        return;
+    } else {
+      const cartItems = getCartItems();
+      console.log(cartItems);
+
+      router.push({
+        pathname: "/(pages)/cart",
+        params: {
+          cart: JSON.stringify(cartItems),
+        },
+      });
+    }
+  }
 
   const handleCountChange = (menuName: string, newCount: number) => {
     setMenuCounts((prev) => ({
@@ -78,14 +113,24 @@ export default function MenuPage() {
     }));
   };
 
-  // const getMenuLine = () => {
-  //     return sampleMenu
-  //     .filter(item => (menuCounts[item.name] ?? 0) > 0)
-  //     .map(item => ({
-  //         ...item,
-  //         quantity: menuCounts[item.name],
-  //     }));
-  // };
+  const getCartItems = () => {
+    return menus
+      .filter((item) => (menuCounts[item.name] ?? 0) > 0)
+      .map((item) => ({
+        name: item.name,
+        info: item.detail,
+        price: item.price,
+        imageUrl: item.image_url,
+        count: menuCounts[item.name],
+      }));
+  };
+
+  const totalItems = Object.values(menuCounts).reduce((sum, c) => sum + c, 0);
+
+  const totalPrice = menus.reduce((sum, item) => {
+    const count = menuCounts[item.name] ?? 0;
+    return sum + item.price * count;
+  }, 0);
 
   return (
     <LinearGradient
@@ -94,19 +139,21 @@ export default function MenuPage() {
       end={{ x: 0, y: 1 }}
       style={{ flex: 1 }}
     >
-      <SafeAreaView style={{ flex: 1 }}>
+      {/* <SafeAreaView style={{ flex: 1 }}> */}
         <View style={styles.headerImg}>
-          <Image source={{ uri: imgUri }} style={styles.storeImg} />
+          <Image source={imageSource}
+            style={styles.storeImg}
+          />
           <View style={styles.Overlay}></View>
           <ThemedText type="titleMd" style={styles.headerName}>
-            {name}
+            {stores?.name}
           </ThemedText>
           <MaterialIcons
             name="location-pin"
             size={25}
             style={styles.headerIcon}
           />
-          <ThemedText style={styles.headerCanteen}>{canteen}</ThemedText>
+          <ThemedText style={styles.headerCanteen}>{stores?.canteen_name}</ThemedText>
         </View>
 
         {/* search bar + tag */}
@@ -119,7 +166,7 @@ export default function MenuPage() {
         </View>
         <View style={{ paddingLeft: 20, paddingBottom: 15 }}>
           <HorizontalTags
-            tags={tags}
+            tags={stores?.tags}
             selectedTag={selected}
             onPressTag={(tag) => setSelected(tag === selected ? null : tag)}
           />
@@ -153,11 +200,11 @@ export default function MenuPage() {
           renderItem={({ item }) => (
             <MenuBlock
               name={item.name}
-              info={item.info}
+              info={item.detail}
               price={item.price}
-              imageUrl={item.imageUrl}
-              tag1={item.tag1}
-              tag2={item.tag2}
+              imageUrl={item.image_url}
+              tag1={item.tag1_id}
+              tag2={item.tag2_id}
               count={menuCounts[item.name] || 0}
               onCountChange={handleCountChange}
             />
@@ -166,13 +213,13 @@ export default function MenuPage() {
 
         <View style={styles.button}>
           <ThemedButton
-            title="{} รายการ"
-            title2="฿ {}"
+            title={`${totalItems} รายการ`}
+            title2={`${totalPrice} ฿`}
             variant="primary"
-            onPress={() => router.push("/(pages)/cart")}
+            onPress={clickButton}
           />
         </View>
-      </SafeAreaView>
+      {/* </SafeAreaView> */}
     </LinearGradient>
   );
 }

@@ -4,6 +4,7 @@ import {
   UserSignIn,
   UserSignUp,
 } from "@/types/user";
+import * as SecureStore from "expo-secure-store";
 
 import axios from "axios";
 import EXPO_API from "./url";
