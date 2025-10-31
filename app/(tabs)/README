@@ -1,0 +1,31 @@
+requirement:
+
+1. any order that fetched and show in (tabs)/order/index should enter in that order
+2. in order have button to accept and save to context
+   - create context order wrap over (tabs)
+     - context order have function to store order that accept by user
+     - context can add and remove accept order
+3. in (tabs)/order/index will show order that accept by user that save in context
+4. implement with simple style just concern with data
+
+---
+
+requirement 2:
+
+1. in (tabs)/order/index just show simple detail of order
+2. user can not accept order in (tabs)/order/index
+
+- create page for show all detail of order
+- in this page user can accept order
+
+3. create button "เริ่มการจัดสั่ง" in (tabs)/order/index
+
+- when enter this button it will show all accept order
+
+---
+
+requirement 3:
+
+1. move confirmOrder to (tabs)/order
+2. confirmOrder use for show summary of whole order that acceped by user
+3. when enter "เริ่มการจัดสั่ง" button >> route to confirmOrder

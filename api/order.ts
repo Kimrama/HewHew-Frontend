@@ -1,6 +1,6 @@
 import axios from "axios";
-import EXPO_API from "./url";
 import * as SecureStore from "expo-secure-store";
+import EXPO_API from "./url";
 
 export interface User {
   username: string;
@@ -10,11 +10,11 @@ export interface User {
   profile_image_url: string;
 }
 
-export interface MenuQuantity {
+export interface menu_quantity {
   MenuQuantityID: string;
-  MenuID: string;
+  menu_id: string;
   OrderID: string;
-  Quantity: number;
+  quantity: number;
 }
 
 export interface TransactionLog {
@@ -27,19 +27,22 @@ export interface TransactionLog {
 }
 
 export interface Order {
-  OrderID: string;
-  UserOrderID: string;
+  order_id: string;
+  user_order_id: string;
   UserDeliveryID: string;
-  Status: string;
-  OrderDate: string;
-  DeliveryMethod: string;
+  status: string;
+  order_date: string;
+  delivery_method: string;
   ConfirmationImageURL: string;
-  AppointmentTime: string;
-  DropOffLocationID: string;
-  MenuQuantity: MenuQuantity[];
+  appointment_time: string;
+  drop_off_location_id: string;
+  menu_quantity: menu_quantity[];
   TransactionLog: TransactionLog;
   Notifications: string | null;
   Chats: string | null;
+  shop_name: string;
+  canteen_name: string;
+  shipping_fee: number;
 }
 
 export interface OrderbyId {
@@ -79,7 +82,9 @@ export async function getOrderbyId(UserId: string): Promise<OrderbyId> {
   return data;
 }
 
-export async function getMyDelivery(): Promise<(Order & { User?: User } & {OrderbyId?: OrderbyId})[]> {
+export async function getMyDelivery(): Promise<
+  (Order & { User?: User } & { OrderbyId?: OrderbyId })[]
+> {
   const token = await SecureStore.getItem("token");
 
   const { data } = await axios.get(`${EXPO_API}/v1/order/delivery`, {
@@ -92,17 +97,17 @@ export async function getMyDelivery(): Promise<(Order & { User?: User } & {Order
   const orders: Order[] = data;
 
   const results = await Promise.all(
-  orders.map(async (order) => {
-    try {
-      const user = await getUserbyId(order.UserOrderID);
-      const orderById = await getOrderbyId(order.OrderID);
-      return { ...order, User: user, OrderbyId: orderById };
-    } catch (err) {
-      console.error(`Fetch user failed for ${order.UserOrderID}:`, err);
-      return { ...order, User: undefined, OrderbyId: undefined };
-    }
-  })
-);
+    orders.map(async (order) => {
+      try {
+        const user = await getUserbyId(order.user_order_id);
+        const orderById = await getOrderbyId(order.order_id);
+        return { ...order, User: user, OrderbyId: orderById };
+      } catch (err) {
+        console.error(`Fetch user failed for ${order.user_order_id}:`, err);
+        return { ...order, User: undefined, OrderbyId: undefined };
+      }
+    })
+  );
 
   return results;
 }
