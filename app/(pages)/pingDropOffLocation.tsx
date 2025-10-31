@@ -65,9 +65,8 @@ export default function PingDropOffLocation() {
         setIsLoadingDropOffLocations(true);
         const locations = await getDropOffLocations();
         setDropOffLocations(locations);
-        console.log("Fetched drop-off locations:", locations);
       } catch (error) {
-        console.error("Failed to fetch drop-off locations:", error);
+        // Error handled silently
       } finally {
         setIsLoadingDropOffLocations(false);
       }
@@ -75,8 +74,7 @@ export default function PingDropOffLocation() {
 
     fetchDropOffLocations();
 
-    // Optionally get current location on app start
-    // getCurrentLocation(); // Uncomment this line if you want to auto-detect location on page load
+    getCurrentLocation();
 
     // Animate the bottom sheet in
     Animated.timing(slideAnim, {
@@ -128,12 +126,7 @@ export default function PingDropOffLocation() {
       }
 
       setIsLoadingLocation(false);
-      console.log("Fixed current location set:", {
-        latitude: fixedLatitude,
-        longitude: fixedLongitude,
-      });
     } catch (error) {
-      console.error("Error setting location:", error);
       setLocationError("Failed to get current location");
       setIsLoadingLocation(false);
     }
@@ -378,7 +371,6 @@ export default function PingDropOffLocation() {
                             if (isNaN(data.latitude) || isNaN(data.longitude) || 
                                 data.latitude < -90 || data.latitude > 90 || 
                                 data.longitude < -180 || data.longitude > 180) {
-                                console.error('Invalid coordinates in updateLocation:', data);
                                 return;
                             }
                             
@@ -408,7 +400,7 @@ export default function PingDropOffLocation() {
                             }
                         }
                     } catch (e) {
-                        console.error('Error parsing message:', e);
+                        // Error handled silently
                     }
                 }
             });
@@ -418,14 +410,6 @@ export default function PingDropOffLocation() {
   `,
     [region, dropOffLocations]
   );
-
-  // Debug: Log the current region coordinates
-  console.log(
-    "Map will render with coordinates:",
-    region.latitude,
-    region.longitude
-  );
-
   const handleWebViewMessage = (event: any) => {
     try {
       const data = JSON.parse(event.nativeEvent.data);
@@ -444,11 +428,9 @@ export default function PingDropOffLocation() {
         //   latitude: data.latitude,
         //   longitude: data.longitude,
         // }));
-
-        console.log("Drop-off location selected:", data);
       }
     } catch (error) {
-      console.error("Error parsing WebView message:", error);
+      // Error handled silently
     }
   };
 

@@ -13,7 +13,6 @@ export const getDropOffLocations = async (): Promise<DropOffLocation[]> => {
     );
     return response.data;
   } catch (error) {
-    console.error("Error fetching drop-off locations:", error);
     throw error;
   }
 };
