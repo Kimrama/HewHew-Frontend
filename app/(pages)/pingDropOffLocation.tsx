@@ -74,7 +74,7 @@ export default function PingDropOffLocation() {
 
     fetchDropOffLocations();
 
-    getCurrentLocation();
+    // getCurrentLocation();
 
     // Animate the bottom sheet in
     Animated.timing(slideAnim, {

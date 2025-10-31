@@ -71,6 +71,15 @@ export default function PagesLayout() {
           headerTitleAlign: "center",
         }}
       />
+      <Stack.Screen
+        name="imageConfirmDelivery"
+        options={{
+          headerTitle: () => (
+            <ThemedText type="subtitle">Confirm Image</ThemedText>
+          ),
+          headerTitleAlign: "center",
+        }}
+      />
     </Stack>
   );
 }
