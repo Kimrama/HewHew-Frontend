@@ -29,7 +29,7 @@ const TypeTextMap: Record<string, string> = {
 
 export const DeliveryMethodMap: Record<string, string> = {
   "FacetoFace": "Face To Face",
-  "dropOff": "Drop Off"
+  "dropOff": "dropoff"
 }
 
 export function StatusBlock({ name, canteen, store, appointmentTime, deliveryMethod, amount, price, status, type }: StatusBlockProps) {
