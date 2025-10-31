@@ -53,7 +53,7 @@ export async function getStore(): Promise<Stores[]> {
 }
 
 export async function getStorebyId(storeId: string): Promise<Store> {
-  const token = await SecureStore.getItemAsync("token"); 
+  const token = await SecureStore.getItemAsync("token");
   const { data } = await axios.get(`${EXPO_API}/v1/shop/${storeId}`, {
     headers: {
       "Content-Type": "application/json",
@@ -76,7 +76,6 @@ export async function getStorebyId(storeId: string): Promise<Store> {
   };
   return store;
 }
-
 
 export async function getCanteen(): Promise<Canteen[]> {
   const { data } = await axios.get(`${EXPO_API}/v1/canteens`, {
