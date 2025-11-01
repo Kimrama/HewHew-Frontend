@@ -143,13 +143,10 @@ export default function Search() {
                     source={require("@/assets/images/searchStoreNotFound.png")}
                     style={{ width: 160, height: 160 }}
                   />
-                  <ThemedText type="subtitle" style={{ marginTop: 20 }}>
-                    No results found
-                  </ThemedText>
+                  <ThemedText type="subtitle" style={{ marginTop: 20 }}>ไม่พบผลลัพธ์</ThemedText>
                   <ThemedText
                     style={{ marginTop: 10, color: Colors.gray1 }}
-                  >{`Try checking your spelling or
-searching for something else.`}</ThemedText>
+                  >{`ลองตรวจสอบคำที่พิมพ์หรือลองค้นหาคำอื่นดู`}</ThemedText>
                 </View>
               }
             />

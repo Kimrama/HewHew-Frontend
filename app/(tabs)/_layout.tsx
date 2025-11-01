@@ -42,7 +42,7 @@ export default function TabsLayout() {
           }}
         />
         <Tabs.Screen
-          name="order/index"
+          name="order"
           options={{
             tabBarLabel: ({ focused, color }) => (
               <ThemedText style={{ color: color }}>Order</ThemedText>

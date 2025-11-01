@@ -171,27 +171,7 @@ export default function MenuPage() {
             onPressTag={(tag) => setSelected(tag === selected ? null : tag)}
           />
         </View>
-        {/* <FlatList
-            data={filteredMenu}
-            keyExtractor={(item, idx) => `${item.Name}-${idx}`}
-            contentContainerStyle={{ alignItems: "center" }}
-            ListFooterComponent={<View style={{marginBottom: 120}}></View>}
-            renderItem={({ item }) => (
-                <MenuBlock
-                name={item.Name}
-                price={item.Price}
-                imageUrl={
-                    item.ImageURL && item.ImageURL.trim() !== ""
-                    ? item.ImageURL
-                    : default_image
-                }
-                tag1={item.Tag1ID}??
-                tag2={item.Tag2ID}??
-                count={menuCounts[item.Name] || 0}
-                onCountChange={handleCountChange}
-                />
-            )}
-        /> */}
+        
         <FlatList
           data={filteredMenu}
           keyExtractor={(item, idx) => `${item.name}-${idx}`}

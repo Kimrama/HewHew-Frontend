@@ -22,7 +22,6 @@ export default function OrderDetail() {
   const { orderId } = useLocalSearchParams<{ orderId: string }>();
   const [order, setOrder] = useState<(Order & { User?: User; menus: { name: string; detail: string; price: number; quantity: number }[]; totalQuantity: number; dropOffLocation?: DropOff;})>();
   const [loading, setLoading] = useState(true);
-  const { acceptOrder, removeOrder, isOrderAccepted } = useOrderContext();
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
@@ -34,7 +33,7 @@ export default function OrderDetail() {
       try {
         const orderData = await getOrderbyId(orderId);
         setOrder(orderData);
-        console.log(order);
+        console.log(order?.confirmation_image_url);
       } catch (error) {
         console.log("Error fetching order:", error);
       } finally {
@@ -45,25 +44,6 @@ export default function OrderDetail() {
     fetchOrder();
   }, [orderId]);
 
-  const handleAcceptOrder = () => {
-    if (!order) return;
-    acceptOrder(order);
-    Alert.alert("Success", "Order accepted successfully!", [
-    {
-      text: "OK",
-      onPress: () => {
-        router.push("/(tabs)/order");
-      },
-    },
-  ]);
-  };
-
-  const handleRemoveOrder = () => {
-    if (!order) return;
-    removeOrder(order.order_id);
-    Alert.alert("Success", "Order removed from accepted list!");
-    router.back();
-  };
 
   if (loading) {
     return (
@@ -80,8 +60,6 @@ export default function OrderDetail() {
       </View>
     );
   }
-
-  const isAccepted = isOrderAccepted(order.order_id);
 
   return (
     <LinearGradient
@@ -123,17 +101,10 @@ export default function OrderDetail() {
           deliveryMethod={order.delivery_method}
           appointmentTime={order.appointment_time}
           riderEarn={order.shipping_fee}
-          type="orderDetail"
+          type="myOrderDetail"
+          confirmImage={order.confirmation_image_url}
         />
 
-        {/* button */}
-        <View style={{paddingTop: 20}}>
-            <ThemedButton
-              title="เพิ่มรายการคำสั่งซื้อ"
-              variant="primary"
-              onPress={handleAcceptOrder}
-            />
-        </View>
       </SafeAreaView>
     </LinearGradient>
   );

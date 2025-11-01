@@ -3,6 +3,10 @@ import { Colors } from '@/constants/Colors';
 import { ThemedText } from "@/components/ThemedText";
 import { MaterialIcons } from '@expo/vector-icons';
 import { View, StyleSheet, Pressable, Modal, TouchableOpacity } from "react-native";
+import SwipeButton from '@/components/SwapButton';
+import { useRouter } from "expo-router";
+
+const router = useRouter();
 
 type StatusBlockProps = {
   name: string;
@@ -11,15 +15,17 @@ type StatusBlockProps = {
   appointmentTime: string;
   deliveryMethod: string;
   amount: number;
-  price: number
+  shipping_fee: number;
   status: string;
   type: string;
+  price: number;
 };
 
 const statusMap: Record<string, string> = {
   "delivered": "จัดส่งสำเร็จ",
-  "pending": "รอการจัดส่ง",
-  "searching": "กำลังหาผู้จัดส่ง",
+  "accepted": "รอการจัดส่ง",
+  "waiting": "กำลังหาผู้จัดส่ง",
+  "expired": "หมดอายุ"
 };
 
 const TypeTextMap: Record<string, string> = {
@@ -28,20 +34,21 @@ const TypeTextMap: Record<string, string> = {
 }
 
 export const DeliveryMethodMap: Record<string, string> = {
-  "FacetoFace": "Face To Face",
-  "dropOff": "dropoff"
+  "handtohand": "handtohand",
+  "dropoff": "Drop Off"
 }
 
-export function StatusBlock({ name, canteen, store, appointmentTime, deliveryMethod, amount, price, status, type }: StatusBlockProps) {
+export function StatusBlock({ name, canteen, store, appointmentTime, deliveryMethod, amount, shipping_fee, status, type, price }: StatusBlockProps) {
     const [modalVisible, setModalVisible] = useState(false);
     const [currentStatus, setCurrentStatus] = useState(status);
-    const statuses = ["delivered", "pending", "searching"];
+    const statuses = ["delivered", "accepted", "waiting", "expired"];
 
     const getStatusColor = (status: string) => {
     switch(status) {
       case "delivered": return Colors.primary;
-      case "pending": return Colors.secondary;
-      case "searching": return Colors.red;
+      case "accepted": return Colors.green;
+      case "waiting": return Colors.secondary;
+      case "expired": return Colors.red;
       default: return Colors.gray1;
     }
   }
@@ -62,7 +69,7 @@ export function StatusBlock({ name, canteen, store, appointmentTime, deliveryMet
         {/* body */}
         <View style={{gap: 4}}>
             {type === "rider" ? (
-                <ThemedText type='subtitle' style={{fontSize: 16, color: Colors.primary}}>+ ฿ {price}</ThemedText>
+                <ThemedText type='subtitle' style={{fontSize: 16, color: Colors.primary}}>+ ฿ {shipping_fee}</ThemedText>
             ) : null}
             <View style={styles.row}>
                 <MaterialIcons name='location-pin' size={15} color={Colors.green}></MaterialIcons>
@@ -97,45 +104,20 @@ export function StatusBlock({ name, canteen, store, appointmentTime, deliveryMet
         <ThemedText type='defaultSemiBold' style={{marginTop: 6, fontSize: 16}}>Order Total : ฿ {price}</ThemedText>
     
         {/* status */}
-        {type === "rider" && status === 'pending' ? (
-            <>
-            <Pressable style={[styles.status, { backgroundColor: getStatusColor(currentStatus), elevation: 3}]} onPress={() => setModalVisible(true)}>
-                <ThemedText type="defaultSemiBold" style={{ color: Colors.white }}>{statusMap[currentStatus]}</ThemedText>
-                <MaterialIcons name='edit' style={{color: Colors.white, paddingLeft: 4}}></MaterialIcons>
-            </Pressable>
-
-            <Modal
-                transparent
-                visible={modalVisible}
-                animationType="fade"
-                onRequestClose={() => setModalVisible(false)}
-            >
-                <Pressable
-                style={styles.modalBackground}
-                onPress={() => setModalVisible(false)}
-                >
-                <View style={styles.dropdown}>
-                    {statuses.map((s) => (
-                    <TouchableOpacity
-                        key={s}
-                        style={styles.dropdownItem}
-                        onPress={() => {
-                        setCurrentStatus(s);
-                        setModalVisible(false);
-                        }}
-                    >
-                        <ThemedText>{statusMap[s]}</ThemedText>
-                    </TouchableOpacity>
-                    ))}
-                </View>
-                </Pressable>
-            </Modal>
-            </>
+        {type === "rider" && status === 'accepted' ? (
+          <View style={styles.statusAccepted}>
+              <SwipeButton 
+              label={statusMap[currentStatus]} 
+              onSwipeComplete={() => {
+                // router.push('/(pages)/imageConfirm');
+              }} 
+            />
+            </View>
         ) : (
             <View style={[styles.status, { backgroundColor: getStatusColor(currentStatus) }]}>
-            <ThemedText type="defaultSemiBold" style={{ color: Colors.white }}>
-                {statusMap[currentStatus]}
-            </ThemedText>
+              <ThemedText type="defaultSemiBold" style={{ color: Colors.white }}>
+                  {statusMap[currentStatus]}
+              </ThemedText>
             </View>
         )}
     </View>
@@ -201,6 +183,16 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 6,
     width: 120,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 20
+  },
+  statusAccepted: {
+    marginTop: 10,
+    flexDirection: 'row',
+    width: '100%',
+    paddingVertical: 4,
+    paddingHorizontal: 6,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 20

@@ -80,6 +80,15 @@ export default function PagesLayout() {
           headerTitleAlign: "center",
         }}
       />
+      <Stack.Screen
+        name="myOrderDetail"
+        options={{
+          headerTitle: () => (
+            <ThemedText type="subtitle">My Order Detail</ThemedText>
+          ),
+          headerTitleAlign: "center",
+        }}
+      />
     </Stack>
   );
 }

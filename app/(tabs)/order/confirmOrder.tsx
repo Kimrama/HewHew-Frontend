@@ -1,9 +1,17 @@
+import { DropOff, Order, User, acceptOrderbyRider, getOrderbyId } from "@/api/order";
+import { OrderBlock } from "@/components/OrderBlock";
+import { ThemedButton } from "@/components/ThemedButton";
+import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
 import { useOrderContext } from "@/store/order-context";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
+  FlatList,
   Pressable,
+  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,12 +20,35 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ConfirmOrder() {
-  const { acceptedOrders, removeOrder } = useOrderContext();
+  const { acceptedOrders, removeOrder, acceptOrder } = useOrderContext();
+  const [orders, setOrders] = useState<(Order & { 
+    User?: User; 
+    menus: { name: string; detail: string; price: number; quantity: number }[]; 
+    totalQuantity: number; 
+    dropOffLocation?: DropOff;
+  })[]>([]);
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
+  useEffect(() => {
+    const fetchAcceptedOrders = async () => {
+      const enrichedOrders: typeof orders = [];
+      for (const order of acceptedOrders) {
+        try {
+          const fullOrder = await getOrderbyId(order.order_id);
+          enrichedOrders.push(fullOrder);
+        } catch (err) {
+          console.error("Error fetching order details:", err);
+        }
+      }
+      setOrders(enrichedOrders);
+    };
+
+    fetchAcceptedOrders();
+  }, [acceptedOrders]);
+
   const calculateTotalPrice = () => {
-    return acceptedOrders.reduce(
+    return orders.reduce(
       (total, order) => total + order.shipping_fee,
       0
     );
@@ -34,10 +65,7 @@ export default function ConfirmOrder() {
           style: "destructive",
           onPress: () => {
             removeOrder(orderId);
-            if (acceptedOrders.length === 1) {
-              // If this is the last order, go back to order list
-              router.back();
-            }
+            if (acceptedOrders.length === 1) router.back();
           },
         },
       ]
@@ -45,129 +73,141 @@ export default function ConfirmOrder() {
   };
 
   const handleConfirmDelivery = () => {
-    if (acceptedOrders.length === 0) {
+    if (orders.length === 0) {
       Alert.alert("No Orders", "You haven't accepted any orders yet.");
       return;
     }
 
     Alert.alert(
       "Confirm Delivery",
-      `Are you sure you want to start delivery for ${acceptedOrders.length} order(s)?`,
+      `Are you sure you want to start delivery for ${orders.length} orders?`,
       [
         { text: "Cancel", style: "cancel" },
         {
           text: "Confirm",
-          onPress: () => {
-            // Navigate to delivery page
-            router.push("/(pages)/myDelivery");
-            Alert.alert("Success", "Delivery started successfully!");
-          },
+          onPress: async () => {
+            try {
+              for (const o of acceptedOrders) {
+                console.log(o.order_id)
+                await acceptOrderbyRider(o.order_id);
+              }
+              Alert.alert("Success", "Delivery started successfully!");
+              router.push("/(pages)/myDelivery");
+            } catch (error) {
+              console.error(error);
+              Alert.alert("Error", "Failed to accept order.");
+            }
+          }
         },
       ]
     );
   };
 
+  const renderItem = ({
+    item,
+    index,
+    onRemove,
+  }: {
+    item: typeof orders[number];
+    index: number;
+    onRemove: (orderId: string) => void;
+  }) => (
+    <OrderBlock
+      key={item.order_id}
+      store={item.shop_name}
+      amount={item.totalQuantity}
+      canteen={item.canteen_name}
+      menus={item.menus}
+      orderPrice={item.amount}
+      name={item.User?.username ?? "Unknown"}
+      address={item.dropOffLocation?.name ?? ""}
+      addressDetail={item.dropOffLocation?.detail ?? ""}
+      deliveryMethod={item.delivery_method}
+      appointmentTime={item.appointment_time}
+      riderEarn={item.shipping_fee}
+      index={index + 1}
+      type="confirmOrder"
+      onRemove={() => onRemove(item.order_id)}
+      confirmImage=""
+    />
+  );
+
+
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={[
-        styles.contentContainer,
-        { paddingBottom: 60 + insets.bottom },
-      ]}
+    <LinearGradient
+      colors={Colors.bg}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      style={{ flex: 1 }}
     >
-      <View style={styles.header}>
-        <Text style={styles.title}>Confirm Orders</Text>
-        <Text style={styles.subtitle}>
-          Review your accepted orders before starting delivery
-        </Text>
-      </View>
-
-      {acceptedOrders.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No accepted orders</Text>
-          <Text style={styles.emptySubtext}>
-            Go back to accept some orders first
-          </Text>
-          <Pressable style={styles.backButton} onPress={() => router.back()}>
-            <Text style={styles.backButtonText}>Back to Orders</Text>
-          </Pressable>
-        </View>
-      ) : (
-        <>
-          <View style={styles.ordersSection}>
-            <Text style={styles.sectionTitle}>
-              Accepted Orders ({acceptedOrders.length})
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingHorizontal: 31, paddingTop: 20, paddingBottom: 130 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {acceptedOrders.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No accepted orders</Text>
+            <Text style={styles.emptySubtext}>
+              Go back to accept some orders first
             </Text>
-            {acceptedOrders.map((order, index) => (
-              <View key={order.order_id} style={styles.orderCard}>
-                <View style={styles.orderHeader}>
-                  <Text style={styles.orderNumber}>Order #{index + 1}</Text>
-                  <View style={styles.orderHeaderRight}>
-                    <Text style={styles.orderId}>ID: {order.order_id}</Text>
-                    <Pressable
-                      style={styles.removeButton}
-                      onPress={() => handleRemoveOrder(order.order_id)}
-                    >
-                      <Text style={styles.removeButtonText}>×</Text>
-                    </Pressable>
-                  </View>
-                </View>
-
-                <View style={styles.orderDetails}>
-                  <Text style={styles.orderInfo}>
-                    Customer: {order.user_order_id}
-                  </Text>
-                  <Text style={styles.orderInfo}>Shop: {order.shop_name}</Text>
-                  <Text style={styles.orderInfo}>
-                    Canteen: {order.canteen_name}
-                  </Text>
-                  <Text style={styles.orderInfo}>
-                    Items: {order.menu_quantity.length}
-                  </Text>
-                  <Text style={styles.orderInfo}>
-                    Delivery Method: {order.delivery_method}
-                  </Text>
-                  {order.appointment_time && (
-                    <Text style={styles.orderInfo}>
-                      Appointment:{" "}
-                      {new Date(order.appointment_time).toLocaleString()}
-                    </Text>
-                  )}
-                </View>
-
-                <View style={styles.priceContainer}>
-                  <Text style={styles.priceLabel}>Shipping Fee:</Text>
-                  <Text style={styles.price}>฿{order.shipping_fee}</Text>
-                </View>
-              </View>
-            ))}
-          </View>
-
-          <View style={styles.summarySection}>
-            <Text style={styles.summaryTitle}>Delivery Summary</Text>
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Total Orders:</Text>
-              <Text style={styles.summaryValue}>{acceptedOrders.length}</Text>
-            </View>
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Total Earnings:</Text>
-              <Text style={styles.summaryValue}>฿{calculateTotalPrice()}</Text>
-            </View>
-          </View>
-
-          <View style={styles.buttonContainer}>
-            <Pressable
-              style={styles.confirmButton}
-              onPress={handleConfirmDelivery}
-            >
-              <Text style={styles.confirmButtonText}>
-                ยืนยันการจัดส่ง ({acceptedOrders.length} รายการ)
-              </Text>
+            <Pressable style={styles.backButton} onPress={() => router.back()}>
+              <Text style={styles.backButtonText}>Back to Orders</Text>
             </Pressable>
           </View>
-        </>
-      )}
-    </ScrollView>
+        ) : (
+          <>
+            {/* Header */}
+            <View style={{paddingBottom: 10}}>
+              <View style={[styles.row, { justifyContent: "space-between", }]}>
+                <View style={styles.canteen}>
+                  <ThemedText>{acceptedOrders[0].canteen_name}</ThemedText>
+                </View>
+              </View>
+            </View>
+
+            {/* List items */}
+            {acceptedOrders.map((order, index) => (
+              <View key={order.order_id}>
+                {renderItem({ item: order, index, onRemove: handleRemoveOrder, })}
+                {index !== acceptedOrders.length - 1 && (
+                  <View
+                    style={{
+                      height: 1,
+                      backgroundColor: Colors.gray1 ?? "#E0E0E0",
+                      marginVertical: 10,
+                    }}
+                  />
+                )}
+              </View>
+            ))}
+
+            {/* Summary */}
+            <View style={styles.summarySection}>
+              <View style={styles.summaryRow}>
+                <ThemedText style={styles.summaryLabel}>Total Orders:</ThemedText>
+                <ThemedText type='defaultSemiBold' style={{ fontSize: 16, color: Colors.primary }}>
+                  {acceptedOrders.length}
+                </ThemedText>
+              </View>
+              <View style={styles.summaryRow}>
+                <ThemedText style={styles.summaryLabel}>Total Earnings:</ThemedText>
+                <ThemedText type='defaultSemiBold' style={{ fontSize: 16, color: Colors.primary }}>
+                  ฿{calculateTotalPrice()}
+                </ThemedText>
+              </View>
+            </View>
+
+            {/* Confirm button */}
+            <ThemedButton
+              title={`ยืนยันการจัดส่ง (${acceptedOrders.length} รายการ)`}
+              variant="primary"
+              onPress={handleConfirmDelivery}
+            />
+          </>
+        )}
+      </ScrollView>
+    </LinearGradient>
   );
 }
 
@@ -298,9 +338,11 @@ const styles = StyleSheet.create({
   },
   summarySection: {
     backgroundColor: "#f0f8ff",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    marginTop: 10,
+    marginBottom: 20,
     borderWidth: 1,
     borderColor: Colors.primary,
   },
@@ -339,4 +381,28 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
   },
+    row: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  canteen: {
+    height: 25,
+    paddingHorizontal: 10,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    borderColor: Colors.primary,
+    borderWidth: 1,
+    backgroundColor: Colors.white,
+  },
+  button: {
+    marginVertical: 30,
+    position: "absolute",
+    left: 30,
+    bottom: 30,
+  },
 });
+function onRemove(order_id: string): void {
+  throw new Error("Function not implemented.");
+}
+
