@@ -8,18 +8,17 @@ import { getMyDelivery, Order, User } from '@/api/order';
 export default function MyDelivery() {
   const [myDelivery, setMyDelivery] = useState<(Order & { User?: User;})[]>([]);
 
-//   useEffect(() => {
-//     const fetchData = async () => {
-//       try {
-//         const response = await getMyDelivery();
-//         console.log(response);
-//         setMyDelivery(response);
-//       } catch (err) {
-//         console.error(err);
-//       }
-//     };
-//     fetchData();
-//   }, []);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await getMyDelivery();
+        setMyDelivery(response);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchData();
+  }, []);
 
   return (
     <LinearGradient
@@ -49,6 +48,7 @@ export default function MyDelivery() {
                 appointmentTime={item.appointment_time}
                 deliveryMethod={item.delivery_method}
                 amount={totalQuantity}
+                shipping_fee={item.shipping_fee}
                 price={item.amount}
                 status={item.status}
                 type='rider'

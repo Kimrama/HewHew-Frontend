@@ -7,7 +7,7 @@ type ThemedButtonProps = {
   title: string;
   title2?: string;
   onPress: () => void;
-  variant?: "primary" | "secondary" | 'tertiary';
+  variant?: "primary" | "secondary" | 'tertiary' | 'delete';
   style?: ViewStyle;
 };
 
@@ -25,12 +25,14 @@ export function ThemedButton({
     primary: [Colors.primary, Colors.green],
     secondary: [Colors.secondary, Colors.cream],
     tertiary: ["#84B3A2", "#BCDCBA"],
+    delete: [Colors.red, Colors.red]
   };
 
   const textColors: Record<NonNullable<ThemedButtonProps["variant"]>, string> = {
     primary: Colors.white,
     secondary: Colors.primary,
     tertiary: Colors.white,
+    delete: Colors.white
   };
   const isSingle = title2 === "";
 

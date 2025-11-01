@@ -1,11 +1,16 @@
-import { getOrder, Order } from "@/api/order";
+import { DropOff, getOrderbyId, Order, User } from "@/api/order";
+import { OrderBlock } from "@/components/OrderBlock";
+import { ThemedButton } from "@/components/ThemedButton";
+import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
 import { useOrderContext } from "@/store/order-context";
+import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   Alert,
   Pressable,
+  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
@@ -15,7 +20,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function OrderDetail() {
   const { orderId } = useLocalSearchParams<{ orderId: string }>();
-  const [order, setOrder] = useState<Order | null>(null);
+  const [order, setOrder] = useState<(Order & { User?: User; menus: { name: string; detail: string; price: number; quantity: number }[]; totalQuantity: number; dropOffLocation?: DropOff;})>();
   const [loading, setLoading] = useState(true);
   const { acceptOrder, removeOrder, isOrderAccepted } = useOrderContext();
   const router = useRouter();
@@ -27,9 +32,9 @@ export default function OrderDetail() {
 
       setLoading(true);
       try {
-        const orders = await getOrder();
-        const foundOrder = orders.find((o) => o.order_id === orderId);
-        setOrder(foundOrder || null);
+        const orderData = await getOrderbyId(orderId);
+        setOrder(orderData);
+        console.log(order);
       } catch (error) {
         console.log("Error fetching order:", error);
       } finally {
@@ -43,7 +48,14 @@ export default function OrderDetail() {
   const handleAcceptOrder = () => {
     if (!order) return;
     acceptOrder(order);
-    Alert.alert("Success", "Order accepted successfully!");
+    Alert.alert("Success", "Order accepted successfully!", [
+    {
+      text: "OK",
+      onPress: () => {
+        router.push("/(tabs)/order");
+      },
+    },
+  ]);
   };
 
   const handleRemoveOrder = () => {
@@ -72,72 +84,58 @@ export default function OrderDetail() {
   const isAccepted = isOrderAccepted(order.order_id);
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={[
-        styles.contentContainer,
-        { paddingBottom: 60 + insets.bottom },
-      ]}
+    <LinearGradient
+      colors={Colors.bg}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      style={{ flex: 1 }}
     >
-      <View style={styles.header}>
-        <Text style={styles.title}>Order #{order.order_id}</Text>
-        <Text style={styles.status}>{order.status}</Text>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Order Information</Text>
-        <Text style={styles.info}>Customer ID: {order.user_order_id}</Text>
-        <Text style={styles.info}>
-          Order Date: {new Date(order.order_date).toLocaleDateString()}
-        </Text>
-        <Text style={styles.info}>
-          Delivery Method: {order.delivery_method}
-        </Text>
-        {order.appointment_time && (
-          <Text style={styles.info}>
-            Appointment: {new Date(order.appointment_time).toLocaleString()}
-          </Text>
-        )}
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Restaurant Details</Text>
-        <Text style={styles.info}>Shop: {order.shop_name}</Text>
-        <Text style={styles.info}>Canteen: {order.canteen_name}</Text>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Menu Items</Text>
-        {order.menu_quantity.map((item, index) => (
-          <View key={index} style={styles.menuItem}>
-            <Text style={styles.menuItemName}>Menu ID: {item.menu_id}</Text>
-            <Text style={styles.menuItemQuantity}>
-              Quantity: {item.quantity}
-            </Text>
+      <SafeAreaView style={{ flex: 1, paddingHorizontal: 31, paddingTop: 10 }}>
+        {/* header */}
+        <View
+          style={[
+            styles.row,
+            { justifyContent: "space-between", paddingVertical: 10 },
+          ]}
+        >
+          <View style={styles.canteen}>
+            <ThemedText>{order.canteen_name}</ThemedText>
           </View>
-        ))}
-      </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Payment Details</Text>
-        <Text style={styles.info}>Shipping Fee: ฿{order.shipping_fee}</Text>
-      </View>
-
-      <View style={styles.buttonContainer}>
-        {!isAccepted ? (
-          <Pressable style={styles.acceptButton} onPress={handleAcceptOrder}>
-            <Text style={styles.buttonText}>Accept Order</Text>
-          </Pressable>
-        ) : (
-          <View style={styles.acceptedContainer}>
-            <Text style={styles.acceptedText}>✓ Order Accepted</Text>
-            <Pressable style={styles.removeButton} onPress={handleRemoveOrder}>
-              <Text style={styles.buttonText}>Remove Order</Text>
-            </Pressable>
+          <View style={styles.row}>
+            <View style={styles.amount}>
+              <ThemedText>{order.totalQuantity}</ThemedText>
+            </View>
+            <ThemedText style={{ paddingLeft: 10 }}>รายการ</ThemedText>
           </View>
-        )}
-      </View>
-    </ScrollView>
+        </View>
+
+        {/* order */}
+        <OrderBlock
+          store={order.shop_name}
+          amount={order.totalQuantity}
+          canteen={order.canteen_name}
+          menus={order.menus}
+          orderPrice={order.amount}
+          name={order.User?.username ?? 'Unknown'}
+          address={order.dropOffLocation?.name ?? ''}
+          addressDetail={order.dropOffLocation?.detail ?? ''}
+          deliveryMethod={order.delivery_method}
+          appointmentTime={order.appointment_time}
+          riderEarn={order.shipping_fee}
+          type="orderDetail"
+        />
+
+        {/* button */}
+        <View style={{paddingTop: 20}}>
+            <ThemedButton
+              title="เพิ่มรายการคำสั่งซื้อ"
+              variant="primary"
+              onPress={handleAcceptOrder}
+            />
+        </View>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
@@ -230,5 +228,35 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  canteen: {
+    height: 25,
+    paddingHorizontal: 10,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    borderColor: Colors.primary,
+    borderWidth: 1,
+    backgroundColor: Colors.white,
+  },
+  amount: {
+    height: 25,
+    width: 25,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    borderColor: Colors.primary,
+    borderWidth: 1,
+    backgroundColor: Colors.white,
+  },
+  button: {
+    marginVertical: 30,
+    position: "absolute",
+    left: 30,
+    bottom: 30,
   },
 });

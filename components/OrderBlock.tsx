@@ -14,14 +14,16 @@ type OrderTypeProp = {
   orderPrice: number;
   name: string;
   address: string;
+  addressDetail: string;
   deliveryMethod: string;
   appointmentTime: string;
   riderEarn: number;
   type?: string;
   index?: number;
+  onRemove?: () => void
 };
 
-export function OrderBlock({ name, canteen, store, appointmentTime, deliveryMethod, amount, menus, orderPrice, address, riderEarn, type = 'orderDatail', index }: OrderTypeProp) {
+export function OrderBlock({ name, canteen, store, appointmentTime, deliveryMethod, amount, menus, orderPrice, address, addressDetail, riderEarn, type = 'orderDatail', index, onRemove }: OrderTypeProp) {
 
   return (
     <View>
@@ -31,10 +33,15 @@ export function OrderBlock({ name, canteen, store, appointmentTime, deliveryMeth
                 <ThemedText type="defaultSemiBold">รายการที่ {index}</ThemedText>
 
                 <View style={{ flexDirection: 'row' }}>
-                <View style={styles.amount}>
-                    <ThemedText>{amount}</ThemedText>
-                </View>
-                <ThemedText style={{ paddingLeft: 10 }}>รายการ</ThemedText>
+                    <View style={styles.amount}>
+                        <ThemedText>{amount}</ThemedText>
+                    </View>
+                    <ThemedText style={{ paddingLeft: 10 }}>รายการ</ThemedText>
+                    {onRemove && (
+                        <Pressable onPress={onRemove} style={{ marginLeft: 10 }}>
+                            <MaterialIcons name={"close"} size={20} color={Colors.red} />
+                        </Pressable>
+                    )}
                 </View>
             </View>
         ) : null}
@@ -73,6 +80,7 @@ export function OrderBlock({ name, canteen, store, appointmentTime, deliveryMeth
                 <ThemedText type='defaultSemiBold' style={{fontSize: 16}}>{name}</ThemedText>
             </View>
             <ThemedText>{address}</ThemedText>
+            <ThemedText>{addressDetail}</ThemedText>
         </View>
 
         {/* delivery */}

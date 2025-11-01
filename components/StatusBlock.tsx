@@ -15,9 +15,10 @@ type StatusBlockProps = {
   appointmentTime: string;
   deliveryMethod: string;
   amount: number;
-  price: number
+  shipping_fee: number;
   status: string;
   type: string;
+  price: number;
 };
 
 const statusMap: Record<string, string> = {
@@ -37,7 +38,7 @@ export const DeliveryMethodMap: Record<string, string> = {
   "dropoff": "Drop Off"
 }
 
-export function StatusBlock({ name, canteen, store, appointmentTime, deliveryMethod, amount, price, status, type }: StatusBlockProps) {
+export function StatusBlock({ name, canteen, store, appointmentTime, deliveryMethod, amount, shipping_fee, status, type, price }: StatusBlockProps) {
     const [modalVisible, setModalVisible] = useState(false);
     const [currentStatus, setCurrentStatus] = useState(status);
     const statuses = ["delivered", "accepted", "waiting", "expired"];
@@ -68,7 +69,7 @@ export function StatusBlock({ name, canteen, store, appointmentTime, deliveryMet
         {/* body */}
         <View style={{gap: 4}}>
             {type === "rider" ? (
-                <ThemedText type='subtitle' style={{fontSize: 16, color: Colors.primary}}>+ ฿ {price}</ThemedText>
+                <ThemedText type='subtitle' style={{fontSize: 16, color: Colors.primary}}>+ ฿ {shipping_fee}</ThemedText>
             ) : null}
             <View style={styles.row}>
                 <MaterialIcons name='location-pin' size={15} color={Colors.green}></MaterialIcons>
