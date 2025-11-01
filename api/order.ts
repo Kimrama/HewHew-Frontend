@@ -217,3 +217,29 @@ export async function acceptOrderbyRider(orderId: string): Promise<any> {
     throw error;
   }
 }
+
+export async function confirmOrderbyRider(
+  orderId: string, imageUri: string
+): Promise<any> {
+  const token = await SecureStore.getItemAsync("token");
+  const formData = new FormData();
+  
+  formData.append("order_id", orderId);
+  if (imageUri) {
+    const filename = imageUri.split("/").pop() || "photo.jpg";
+    const match = /\.([a-zA-Z0-9]+)$/.exec(filename);
+    const type = match ? `image/${match[1]}` : `image`;
+    formData.append("image", {
+      uri: imageUri,
+      name: filename,
+      type,
+    } as any);
+  }
+  const { data } = await axios.post(`${EXPO_API}/v1/order/confirm`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return data;
+}

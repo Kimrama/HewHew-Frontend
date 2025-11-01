@@ -33,7 +33,7 @@ export default function MyDelivery() {
     >
       <View style={{ flex: 1, alignItems: 'center' }}>
         <FlatList
-          data={myDelivery ?? [].slice().reverse()}
+          data={[...myDelivery].reverse() ?? []}
           keyExtractor={(item, index) => `${item.order_id}-${index}`}
           contentContainerStyle={{ paddingVertical: 10, flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
@@ -58,6 +58,7 @@ export default function MyDelivery() {
 
             return (
               <StatusBlock
+                id={item.order_id}
                 name={item.User?.username ?? 'Unknown'}
                 canteen={item.canteen_name}
                 store={item.shop_name}

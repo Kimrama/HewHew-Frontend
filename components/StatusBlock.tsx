@@ -9,6 +9,7 @@ import { useRouter } from "expo-router";
 const router = useRouter();
 
 type StatusBlockProps = {
+  id : string;
   name: string;
   canteen: string;
   store: string;
@@ -38,7 +39,7 @@ export const DeliveryMethodMap: Record<string, string> = {
   "dropoff": "Drop Off"
 }
 
-export function StatusBlock({ name, canteen, store, appointmentTime, deliveryMethod, amount, shipping_fee, status, type, price }: StatusBlockProps) {
+export function StatusBlock({ id, name, canteen, store, appointmentTime, deliveryMethod, amount, shipping_fee, status, type, price }: StatusBlockProps) {
     const [modalVisible, setModalVisible] = useState(false);
     const [currentStatus, setCurrentStatus] = useState(status);
     const statuses = ["delivered", "accepted", "waiting", "expired"];
@@ -109,7 +110,10 @@ export function StatusBlock({ name, canteen, store, appointmentTime, deliveryMet
               <SwipeButton 
               label={statusMap[currentStatus]} 
               onSwipeComplete={() => {
-                // router.push('/(pages)/imageConfirm');
+                router.push({
+                  pathname: '/(pages)/imageConfirmDelivery',
+                  params: { id },
+                });
               }} 
             />
             </View>
