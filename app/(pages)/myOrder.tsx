@@ -36,7 +36,7 @@ export default function myOrder() {
     >
       <View style={{ flex: 1, alignItems: 'center' }}>
         <FlatList
-          data={myOrder ?? [].slice().reverse()}
+          data={[...myOrder].reverse() ?? []}
           keyExtractor={(item, index) => `${item.order_id}-${index}`}
           contentContainerStyle={{ paddingVertical: 10, flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
@@ -67,6 +67,7 @@ export default function myOrder() {
                 }}
               >
                 <StatusBlock
+                  id={item.order_id}
                   name={item.User?.username ?? "Unknown"}
                   canteen={item.canteen_name}
                   store={item.shop_name}

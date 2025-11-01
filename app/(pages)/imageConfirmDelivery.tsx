@@ -1,6 +1,5 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   Alert,
@@ -11,16 +10,18 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
+import {confirmOrderbyRider} from "@/api/order";
 import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
 import { LinearGradient } from "expo-linear-gradient";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 export default function ImageConfirmDelivery() {
   const router = useRouter();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const { id } = useLocalSearchParams();
 
   const pickImage = async () => {
     const permissionResult =
@@ -97,14 +98,22 @@ export default function ImageConfirmDelivery() {
     try {
       // Simulate upload process
       await new Promise((resolve) => setTimeout(resolve, 2000));
-
       Alert.alert(
         "Success!",
         "Image uploaded successfully. Delivery confirmed.",
         [
           {
             text: "OK",
-            onPress: () => router.back(),
+            onPress: () => {
+            confirmOrderbyRider(id, selectedImage ?? '')
+              .then(() => {
+                router.push("/(pages)/myDelivery");
+              })
+              .catch((error) => {
+                console.error(error);
+                Alert.alert("Upload Failed", "Please try again.");
+              });
+          },
           },
         ]
       );
