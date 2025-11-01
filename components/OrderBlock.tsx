@@ -3,8 +3,15 @@ import { Colors } from '@/constants/Colors';
 import { ThemedText } from "@/components/ThemedText";
 import { MaterialIcons } from '@expo/vector-icons';
 import { View, StyleSheet, Pressable, Modal, TouchableOpacity } from "react-native";
-import { MenuItem } from "@/sampleData/sampleOrder";
 import { formatDateTime, DeliveryMethodMap } from "./StatusBlock";
+import { Image } from "react-native";
+
+export type MenuItem = {
+    name: string;
+    detail: string;
+    price: number;
+    quantity: number;
+}
 
 type OrderTypeProp = {
   store: string;
@@ -20,10 +27,11 @@ type OrderTypeProp = {
   riderEarn: number;
   type?: string;
   index?: number;
-  onRemove?: () => void
+  onRemove?: () => void;
+  confirmImage: string;
 };
 
-export function OrderBlock({ name, canteen, store, appointmentTime, deliveryMethod, amount, menus, orderPrice, address, addressDetail, riderEarn, type = 'orderDatail', index, onRemove }: OrderTypeProp) {
+export function OrderBlock({ name, canteen, store, appointmentTime, deliveryMethod, amount, menus, orderPrice, address, addressDetail, riderEarn, type = 'orderDatail', index, onRemove, confirmImage = '' }: OrderTypeProp) {
 
   return (
     <View>
@@ -56,13 +64,14 @@ export function OrderBlock({ name, canteen, store, appointmentTime, deliveryMeth
 
             {/* body */}
             <View>
-                <View style={{gap: 6}}>
+                <View style={{gap: 6, width: 300}}>
                     {menus.map((item, index) => (
                         <MenuLine
                             key={index}
                             name={item.name}
                             detail={item.detail}
                             price={item.price}
+                            quantity={item.quantity}
                         />
                     ))}
                 </View>
@@ -95,23 +104,40 @@ export function OrderBlock({ name, canteen, store, appointmentTime, deliveryMeth
                 <ThemedText>วันที่ {formatDateTime(appointmentTime)}</ThemedText>
             </View>
             
-            <View style={[styles.row, {paddingBottom: 0}]}>
-                <ThemedText type='defaultSemiBold' style={{fontSize: 16}}>ค่าส่งที่จะได้รับ</ThemedText>
-                <ThemedText type='defaultSemiBold' style={{fontSize: 16}}>฿ {riderEarn}</ThemedText>
-            </View>
+            {type !== "myOrderDetail" && (
+                <View style={[styles.row, { paddingBottom: 0 }]}>
+                    <ThemedText type="defaultSemiBold" style={{ fontSize: 16 }}>
+                    ค่าส่งที่จะได้รับ
+                    </ThemedText>
+                    <ThemedText type="defaultSemiBold" style={{ fontSize: 16 }}>
+                    ฿ {riderEarn}
+                    </ThemedText>
+                </View>
+                )}
+
+            
         </View>
+        {confirmImage && confirmImage !== '' && (
+            <View style={{paddingTop: 10}}>
+                <ThemedText type='subtitle' style={{paddingBottom: 10}}>หลักฐานการส่ง</ThemedText>
+                <Image source={{ uri: confirmImage }} style={{ width: 350, height: 200,}} />
+            </View>
+        )}
     </View>
   );
 }
 
-function MenuLine({name, detail, price}: MenuItem){
+function MenuLine({name, detail, price, quantity}: MenuItem){
     return (
-    <View>
-        <View style={[styles.row, {paddingBottom: 2}]}>
-            <ThemedText>{name}</ThemedText>
-            <ThemedText>฿ {price}</ThemedText>
+    <View style={{flexDirection: "row", gap: 10}}>
+        <ThemedText>{quantity}</ThemedText>
+        <View style={{flexDirection: "column"}}>
+            <View style={[styles.row, {paddingBottom: 2}]}>
+                <ThemedText>{name}</ThemedText>
+                <ThemedText>฿ {price*quantity}</ThemedText>
+            </View>
+            <ThemedText style={{fontSize: 13, color: Colors.gray1}}>{detail}</ThemedText> 
         </View>
-        <ThemedText style={{fontSize: 13, color: Colors.gray1}}>{detail}</ThemedText> 
     </View>
   );
 }
@@ -129,7 +155,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   row: {
-    width: 320,
+    width: '100%',
     flexDirection: "row",
     alignItems: "center",
     justifyContent: 'space-between',

@@ -1,12 +1,14 @@
-import { SafeAreaView, StyleSheet, FlatList, View } from 'react-native';
+import { SafeAreaView, StyleSheet, FlatList, View, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/Colors';
 import { StatusBlock } from "@/components/StatusBlock";
 import { useEffect, useState } from 'react';
 import { getMyDelivery, Order, User } from '@/api/order';
+import { ThemedText } from '@/components/ThemedText';
 
 export default function MyDelivery() {
-  const [myDelivery, setMyDelivery] = useState<(Order & { User?: User;})[]>([]);
+  const [myDelivery, setMyDelivery] = useState<(Order & { User?: User })[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -15,6 +17,8 @@ export default function MyDelivery() {
         setMyDelivery(response);
       } catch (err) {
         console.error(err);
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
@@ -29,16 +33,28 @@ export default function MyDelivery() {
     >
       <View style={{ flex: 1, alignItems: 'center' }}>
         <FlatList
-          data={myDelivery}
+          data={myDelivery ?? [].slice().reverse()}
           keyExtractor={(item, index) => `${item.order_id}-${index}`}
-          contentContainerStyle={{ paddingVertical: 10 }}
+          contentContainerStyle={{ paddingVertical: 10, flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
           ListFooterComponent={<View style={{ marginBottom: 50 }} />}
+
+          ListEmptyComponent={
+            !loading ? (
+              <View style={{ flex: 1, justifyContent: "center", alignItems: "center", marginTop: 100 }}>
+                <ThemedText style={{ fontSize: 16,}}>
+                  ยังไม่มีรายการจัดส่งในขณะนี้
+                </ThemedText>
+              </View>
+            ): null
+          }
+
           renderItem={({ item }) => {
-            const totalQuantity = item.menu_quantity?.reduce(
-              (sum, menu) => sum + (menu.quantity ?? 0),
-              0
-            ) ?? 0;
+            const totalQuantity =
+              item.menu_quantity?.reduce(
+                (sum, menu) => sum + (menu.quantity ?? 0),
+                0
+              ) ?? 0;
 
             return (
               <StatusBlock

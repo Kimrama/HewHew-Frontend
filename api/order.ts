@@ -29,6 +29,7 @@ export interface Order {
   shop_name: string;
   canteen_name: string;
   shipping_fee: number;
+  confirmation_image_url: string;
 }
 
 export interface OrderbyId {

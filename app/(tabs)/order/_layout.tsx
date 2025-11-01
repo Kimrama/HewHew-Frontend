@@ -1,11 +1,10 @@
-import { ThemedText } from "@/components/ThemedText";
 import { Stack } from "expo-router";
+import { ThemedText } from "@/components/ThemedText";
 
-export default function PagesLayout() {
+export default function OrderLayout() {
   return (
     <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
-
       <Stack.Screen
         name="orderDetail"
         options={{
@@ -13,7 +12,6 @@ export default function PagesLayout() {
           headerTitleAlign: "center",
         }}
       />
-
       <Stack.Screen
         name="confirmOrder"
         options={{

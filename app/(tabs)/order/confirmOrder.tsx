@@ -128,6 +128,7 @@ export default function ConfirmOrder() {
       index={index + 1}
       type="confirmOrder"
       onRemove={() => onRemove(item.order_id)}
+      confirmImage=""
     />
   );
 
