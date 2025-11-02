@@ -1,5 +1,12 @@
+import { confirmOrderbyRider, finishTransaction } from "@/api/order";
+import { ThemedButton } from "@/components/ThemedButton";
+import { ThemedText } from "@/components/ThemedText";
+import { Colors } from "@/constants/Colors";
 import { MaterialIcons } from "@expo/vector-icons";
+import axios from "axios";
 import * as ImagePicker from "expo-image-picker";
+import { LinearGradient } from "expo-linear-gradient";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   Alert,
@@ -10,19 +17,13 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import {confirmOrderbyRider} from "@/api/order";
-import { ThemedButton } from "@/components/ThemedButton";
-import { ThemedText } from "@/components/ThemedText";
-import { Colors } from "@/constants/Colors";
-import { LinearGradient } from "expo-linear-gradient";
-import { useLocalSearchParams, useRouter } from "expo-router";
 
 export default function ImageConfirmDelivery() {
   const router = useRouter();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const { id } = useLocalSearchParams();
-  const idStr = Array.isArray(id) ? id[0] : id ?? "";
+  const idStr = Array.isArray(id) ? id[0] : (id ?? "");
 
   const pickImage = async () => {
     const permissionResult =
@@ -79,7 +80,7 @@ export default function ImageConfirmDelivery() {
     );
   };
 
-  const handleConfirmPress = () => {
+  const handleConfirm = async () => {
     if (!selectedImage) {
       Alert.alert(
         "Please upload an image",
@@ -90,36 +91,32 @@ export default function ImageConfirmDelivery() {
     if (isUploading) {
       return;
     }
-    handleConfirm();
-  };
 
-  const handleConfirm = async () => {
     setIsUploading(true);
 
     try {
-      // Simulate upload process
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await confirmOrderbyRider(idStr, selectedImage);
+      await finishTransaction(idStr);
+
       Alert.alert(
         "Success!",
-        "Image uploaded successfully. Delivery confirmed.",
+        "Image uploaded and delivery confirmed successfully.",
         [
           {
             text: "OK",
-            onPress: () => {
-            confirmOrderbyRider(idStr, selectedImage ?? '')
-              .then(() => {
-                router.push("/(pages)/myDelivery");
-              })
-              .catch((error) => {
-                console.error(error);
-                Alert.alert("Upload Failed", "Please try again.");
-              });
-          },
+            onPress: () => router.push("/(pages)/myDelivery"),
           },
         ]
       );
     } catch (error) {
-      Alert.alert("Upload Failed", "Please try again.");
+      console.error("Confirmation failed:", error);
+      let errorMessage = "An unexpected error occurred. Please try again.";
+      if (axios.isAxiosError(error)) {
+        errorMessage = `An error occurred: ${
+          error.response?.data?.message || error.message
+        }`;
+      }
+      Alert.alert("Confirmation Failed", errorMessage);
     } finally {
       setIsUploading(false);
     }
@@ -191,16 +188,12 @@ export default function ImageConfirmDelivery() {
             </Pressable>
           </View>
         </ScrollView>
-
-        {/* Confirm Button */}
         <View style={styles.buttonContainer}>
           <ThemedButton
-            title={isUploading ? "กำลังอัปโหลด..." : "ยืนยัน"}
-            onPress={handleConfirmPress}
-            variant="primary"
-            style={
-              !selectedImage || isUploading ? styles.disabledButton : undefined
-            }
+            title={isUploading ? "Confirming..." : "Confirm"}
+            onPress={handleConfirm}
+            disabled={isUploading}
+            style={styles.confirmButton}
           />
         </View>
       </SafeAreaView>
@@ -322,7 +315,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     alignItems: "center",
   },
-  disabledButton: {
-    opacity: 0.6,
+  confirmButton: {
+    width: "100%",
   },
 });

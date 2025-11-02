@@ -1,8 +1,18 @@
-import { getCanteens, getDropoffs, getOrder, Order, Canteen, DropOff } from "@/api/order";
+import {
+  Canteen,
+  DropOff,
+  getCanteens,
+  getDropoffs,
+  getOrder,
+  Order,
+} from "@/api/order";
+import { HorizontalTags } from "@/components/HorizontalTags";
 import { OrderCard } from "@/components/OrderInListCard";
 import { SearchBar } from "@/components/SearchBar";
 import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedText } from "@/components/ThemedText";
+import { Colors } from "@/constants/Colors";
+import { useOrderContext } from "@/store/order-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -14,10 +24,11 @@ import {
   UIManager,
   View,
 } from "react-native";
-import { HorizontalTags } from "@/components/HorizontalTags";
-import { Colors } from "@/constants/Colors";
 
-if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
+if (
+  Platform.OS === "android" &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
@@ -34,6 +45,8 @@ export default function SearchOrderPage() {
   const [selectedDropoff, setSelectedDropoff] = useState<string | null>(null);
 
   const [loading, setLoading] = useState(true);
+
+  const { acceptedOrders } = useOrderContext();
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -66,8 +79,12 @@ export default function SearchOrderPage() {
     const matchSearch =
       order.shop_name.toLowerCase().includes(searchText.toLowerCase()) ||
       order.canteen_name.toLowerCase().includes(searchText.toLowerCase());
-    const matchCanteen = selectedCanteen ? order.canteen_name === selectedCanteen : true;
-    const matchDropoff = selectedDropoff ? order.drop_off_location_id === selectedDropoff : true;
+    const matchCanteen = selectedCanteen
+      ? order.canteen_name === selectedCanteen
+      : true;
+    const matchDropoff = selectedDropoff
+      ? order.drop_off_location_id === selectedDropoff
+      : true;
     return matchSearch && matchCanteen && matchDropoff;
   });
 
@@ -81,12 +98,15 @@ export default function SearchOrderPage() {
 
   return (
     <LinearGradient
-          colors={Colors.bg}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 1 }}
-          style={{ flex: 1 }}
-        >
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.container}>
+      colors={Colors.bg}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      style={{ flex: 1 }}
+    >
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.container}
+      >
         {/* 🔍 Search Bar */}
         <View style={styles.searchContainer}>
           <SearchBar
@@ -108,7 +128,9 @@ export default function SearchOrderPage() {
         />
 
         {/* 📍 จุดส่งอาหาร */}
-        <ThemedText style={[styles.sectionTitle, { marginTop: 10 }]}>จุดส่งอาหาร</ThemedText>
+        <ThemedText style={[styles.sectionTitle, { marginTop: 10 }]}>
+          จุดส่งอาหาร
+        </ThemedText>
         <HorizontalTags
           tags={dropoffs.map((d) => d.name)}
           selectedTag={
@@ -117,7 +139,9 @@ export default function SearchOrderPage() {
           onPressTag={(tag) => {
             const drop = dropoffs.find((d) => d.name === tag);
             if (drop) {
-              setSelectedDropoff(selectedDropoff === drop.dropoff_id ? null : drop.dropoff_id);
+              setSelectedDropoff(
+                selectedDropoff === drop.dropoff_id ? null : drop.dropoff_id
+              );
             }
           }}
         />
@@ -144,14 +168,15 @@ export default function SearchOrderPage() {
 
         <View style={{ height: 80 }} />
       </ScrollView>
-
-      <View style={styles.confirmButton}>
-        <ThemedButton
-          title={"เริ่มการจัดส่ง"}
-          variant="primary"
-          onPress={() => router.push("/(tabs)/order/confirmOrder")}
-        />
-      </View>
+      {acceptedOrders.length > 0 && (
+        <View style={styles.confirmButton}>
+          <ThemedButton
+            title={"เริ่มการจัดส่ง"}
+            variant="primary"
+            onPress={() => router.push("/(tabs)/order/confirmOrder")}
+          />
+        </View>
+      )}
     </LinearGradient>
   );
 }

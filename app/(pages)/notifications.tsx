@@ -7,7 +7,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Redirect, useRouter } from "expo-router";
 import React, { useContext, useEffect, useState } from "react";
-import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
+import { FlatList, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function NotificationsPage() {
@@ -15,16 +15,16 @@ export default function NotificationsPage() {
   const [user, setUser] = useState<any>(null);
   const [noti, setNoti] = useState<Noti[]>([]);
   const { isAuthenticated, logout, token } = useContext(AuthContext);
-    const insets = useSafeAreaInsets();
-    if (!isAuthenticated) {
-      console.log("User not authenticated, redirecting to login.");
-        return <Redirect href="/(auth)/login" />;
-    }
+  const insets = useSafeAreaInsets();
+  if (!isAuthenticated) {
+    console.log("User not authenticated, redirecting to login.");
+    return <Redirect href="/(auth)/login" />;
+  }
 
   const notiMap: Record<string, "success" | "accepted" | "expired"> = {
     "Order Confirmed": "success",
     "Order Accepted": "accepted",
-    "Expired": "expired",
+    Expired: "expired",
   };
 
   useEffect(() => {
@@ -32,7 +32,7 @@ export default function NotificationsPage() {
       try {
         const response = await getUser();
         setUser(response);
-        console.log('user',response.user_id)
+        console.log("user", response.user_id);
       } catch (err) {
         console.error(err);
       }
@@ -57,8 +57,7 @@ export default function NotificationsPage() {
     fetchNoti();
   }, [user]);
 
-
-  const getIconAndColor = (type: "accepted" | "expired" | "success" ) => {
+  const getIconAndColor = (type: "accepted" | "expired" | "success") => {
     switch (type) {
       case "accepted":
         return { icon: "delivery-dining", bg: Colors.green, color: "#fff" };
@@ -71,7 +70,7 @@ export default function NotificationsPage() {
     }
   };
 
-  const handleAction = (type: "accepted" | "expired" | "success" ) => {
+  const handleAction = (type: "accepted" | "expired" | "success") => {
     if (type === "success") {
       router.push("/(tabs)/order");
     } else {
@@ -80,26 +79,31 @@ export default function NotificationsPage() {
   };
 
   const renderItem = ({ item }: { item: Noti }) => {
-  const type = notiMap[item.topic] ?? "success";
-  const { icon, bg, color } = getIconAndColor(notiMap[item.topic] as "accepted" | "expired" | "success");
+    const type = notiMap[item.topic] ?? "success";
+    const { icon, bg, color } = getIconAndColor(
+      notiMap[item.topic] as "accepted" | "expired" | "success"
+    );
     return (
       <View style={[styles.card]}>
         <View style={[styles.iconContainer, { backgroundColor: bg }]}>
           <MaterialIcons name={icon as any} size={40} color={color} />
         </View>
-        <View style={{flexDirection: 'column'}}>
+        <View style={{ flexDirection: "column" }}>
           <View style={styles.textContainer}>
             <ThemedText type="defaultSemiBold">{item.topic}</ThemedText>
             <ThemedText type="default">{item.message}</ThemedText>
           </View>
 
-          <View style={{flexDirection: 'row', justifyContent: 'space-between', width: 270,}}>
-            <ThemedText style={styles.date}>{formatDateTime(item.time_stamp)}</ThemedText>
-            <TouchableOpacity onPress={() => handleAction(notiMap[item.topic] ?? "success")}>
-              <ThemedText style={styles.actionText}>
-                {item.topic === "orderSuccess" ? "Delivered again →" : "Order again →"}
-              </ThemedText>
-            </TouchableOpacity>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              width: 270,
+            }}
+          >
+            <ThemedText style={styles.date}>
+              {formatDateTime(item.time_stamp)}
+            </ThemedText>
           </View>
         </View>
       </View>
@@ -114,7 +118,6 @@ export default function NotificationsPage() {
       style={{ flex: 1 }}
     >
       <View style={styles.container}>
-       
         <FlatList
           data={noti}
           keyExtractor={(item) => item.notification_id.toString()}
@@ -156,6 +159,7 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     flex: 1,
+    width: 270,
   },
   date: {
     color: Colors.gray1,

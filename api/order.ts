@@ -198,14 +198,19 @@ export async function getMyOrder(): Promise<(Order & { User?: User })[]> {
   const orders: Order[] = data;
 
   const results = await Promise.all(
-    orders.map(async (order) => {
-      try {
-        const user = await getUserbyId(order.user_delivery_id);
-        return { ...order, User: user };
-      } catch (err) {
-        console.error(`Fetch user failed for ${order.user_delivery_id}:`, err);
-        return { ...order, User: undefined, OrderbyId: undefined };
+    (orders || []).map(async (order) => {
+      let user: User | undefined;
+      if (order.user_delivery_id) {
+        try {
+          user = await getUserbyId(order.user_delivery_id);
+        } catch (err) {
+          console.error(
+            `Fetch user failed for delivery ID ${order.user_delivery_id}:`,
+            err
+          );
+        }
       }
+      return { ...order, User: user };
     })
   );
 
@@ -334,6 +339,23 @@ export async function getNoti(userId: string): Promise<Noti[]> {
   const token = await SecureStore.getItem("token");
   const { data } = await axios.get(
     `${EXPO_API}/v1/order/notifications/${userId}`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return data;
+}
+
+export async function finishTransaction(orderId: string): Promise<any> {
+  const token = await SecureStore.getItem("token");
+  const { data } = await axios.post(
+    `${EXPO_API}/v1/order/transaction_log/`,
+    {
+      order_id: orderId,
+    },
     {
       headers: {
         "Content-Type": "application/json",

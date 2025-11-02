@@ -1,15 +1,15 @@
-import React, { useState, useRef } from "react";
-import { Colors } from '@/constants/Colors';
+import SwipeButton from "@/components/SwapButton";
 import { ThemedText } from "@/components/ThemedText";
-import { MaterialIcons } from '@expo/vector-icons';
-import { View, StyleSheet, Pressable, Modal, TouchableOpacity } from "react-native";
-import SwipeButton from '@/components/SwapButton';
+import { Colors } from "@/constants/Colors";
+import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import React, { useState } from "react";
+import { StyleSheet, View } from "react-native";
 
 const router = useRouter();
 
 type StatusBlockProps = {
-  id : string;
+  id: string;
   name: string;
   canteen: string;
   store: string;
@@ -23,107 +23,154 @@ type StatusBlockProps = {
 };
 
 const statusMap: Record<string, string> = {
-  "delivered": "จัดส่งสำเร็จ",
-  "accepted": "รอการจัดส่ง",
-  "waiting": "กำลังหาผู้จัดส่ง",
-  "expired": "หมดอายุ"
+  delivered: "จัดส่งสำเร็จ",
+  accepted: "รอการจัดส่ง",
+  waiting: "กำลังหาผู้จัดส่ง",
+  expired: "หมดอายุ",
 };
 
 const TypeTextMap: Record<string, string> = {
-  "receiver": "จัดส่งโดย",
-  "rider": "สั่งซื้อโดย"
-}
+  receiver: "จัดส่งโดย",
+  rider: "สั่งซื้อโดย",
+};
 
 export const DeliveryMethodMap: Record<string, string> = {
-  "handtohand": "handtohand",
-  "dropoff": "Drop Off"
-}
+  handtohand: "Hand To Hand",
+  dropoff: "Drop Off",
+};
 
-export function StatusBlock({ id, name, canteen, store, appointmentTime, deliveryMethod, amount, shipping_fee, status, type, price }: StatusBlockProps) {
-    const [modalVisible, setModalVisible] = useState(false);
-    const [currentStatus, setCurrentStatus] = useState(status);
-    const statuses = ["delivered", "accepted", "waiting", "expired"];
+export function StatusBlock({
+  id,
+  name,
+  canteen,
+  store,
+  appointmentTime,
+  deliveryMethod,
+  amount,
+  shipping_fee,
+  status,
+  type,
+  price,
+}: StatusBlockProps) {
+  const [modalVisible, setModalVisible] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState(status);
+  const statuses = ["delivered", "accepted", "waiting", "expired"];
 
-    const getStatusColor = (status: string) => {
-    switch(status) {
-      case "delivered": return Colors.primary;
-      case "accepted": return Colors.green;
-      case "waiting": return Colors.secondary;
-      case "expired": return Colors.red;
-      default: return Colors.gray1;
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "delivered":
+        return Colors.primary;
+      case "accepted":
+        return Colors.green;
+      case "waiting":
+        return Colors.secondary;
+      case "expired":
+        return Colors.red;
+      default:
+        return Colors.gray1;
     }
-  }
+  };
 
   return (
     <View style={styles.container}>
-        {/* head */}
-        <View style={styles.rowHead}>
-            <ThemedText type='subtitle'>{store}</ThemedText>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <View style={styles.amount}>
-                    <ThemedText>{amount}</ThemedText>
-                </View>
-                <ThemedText style={{ marginLeft: 10 }}>รายการ</ThemedText>
-            </View>
+      {/* head */}
+      <View style={styles.rowHead}>
+        <ThemedText type="subtitle">{store}</ThemedText>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <View style={styles.amount}>
+            <ThemedText>{amount}</ThemedText>
+          </View>
+          <ThemedText style={{ marginLeft: 10 }}>รายการ</ThemedText>
+        </View>
+      </View>
+
+      {/* body */}
+      <View style={{ gap: 4 }}>
+        {type === "rider" ? (
+          <ThemedText
+            type="subtitle"
+            style={{ fontSize: 16, color: Colors.primary }}
+          >
+            + ฿ {shipping_fee}
+          </ThemedText>
+        ) : null}
+        <View style={styles.row}>
+          <MaterialIcons
+            name="location-pin"
+            size={15}
+            color={Colors.green}
+          ></MaterialIcons>
+          <ThemedText style={{ marginLeft: 10 }}>{canteen}</ThemedText>
         </View>
 
-        {/* body */}
-        <View style={{gap: 4}}>
-            {type === "rider" ? (
-                <ThemedText type='subtitle' style={{fontSize: 16, color: Colors.primary}}>+ ฿ {shipping_fee}</ThemedText>
-            ) : null}
-            <View style={styles.row}>
-                <MaterialIcons name='location-pin' size={15} color={Colors.green}></MaterialIcons>
-                <ThemedText style={{  marginLeft: 10 }}>{canteen}</ThemedText>
-            </View>
-
-            {/* <View style={styles.row}>
+        {/* <View style={styles.row}>
                 <MaterialIcons name='person' size={15} color={Colors.green}></MaterialIcons>
                 <ThemedText style={{ paddingLeft: 10}}>{name}</ThemedText>
             </View> */}
 
-            <View style={styles.row}>
-                <MaterialIcons name='access-time-filled' size={15} color={Colors.green}></MaterialIcons>
-                <ThemedText style={{  marginLeft: 10 }}>{formatDateTime(appointmentTime)}</ThemedText>
-            </View>
-
-            <View style={styles.row}>
-                <MaterialIcons
-                    name={
-                    deliveryMethod === 'FacetoFace' ? 'group' :
-                    deliveryMethod === 'dropOff' ? 'hail' : 'no-crash'}
-                    size={15}
-                    color={Colors.green}
-                />
-                <ThemedText style={{  marginLeft: 10 }}>{DeliveryMethodMap[deliveryMethod]}</ThemedText>
-            </View>  
+        <View style={styles.row}>
+          <MaterialIcons
+            name="access-time-filled"
+            size={15}
+            color={Colors.green}
+          ></MaterialIcons>
+          <ThemedText style={{ marginLeft: 10 }}>
+            {formatDateTime(appointmentTime)}
+          </ThemedText>
         </View>
 
-        <ThemedText style={{marginTop: 6}}>{TypeTextMap[type]} {name}</ThemedText>
+        <View style={styles.row}>
+          <MaterialIcons
+            name={
+              deliveryMethod === "FacetoFace"
+                ? "group"
+                : deliveryMethod === "dropOff"
+                  ? "hail"
+                  : "no-crash"
+            }
+            size={15}
+            color={Colors.green}
+          />
+          <ThemedText style={{ marginLeft: 10 }}>
+            {DeliveryMethodMap[deliveryMethod]}
+          </ThemedText>
+        </View>
+      </View>
 
-        {/* bottom */}
-        <ThemedText type='defaultSemiBold' style={{marginTop: 6, fontSize: 16}}>Order Total : ฿ {price}</ThemedText>
-    
-        {/* status */}
-        {type === "rider" && status === 'accepted' ? (
-          <View style={styles.statusAccepted}>
-              <SwipeButton 
-              label={statusMap[currentStatus]} 
-              onSwipeComplete={() => {
-                router.push({
-                  pathname: '/(pages)/imageConfirmDelivery',
-                  params: { id },
-                });
-              }} 
-            />
-            </View>
-        ) : (
-            <View style={[styles.status, { backgroundColor: getStatusColor(currentStatus) }]}>
-              <ThemedText type="defaultSemiBold" style={{ color: Colors.white }}>
-                  {statusMap[currentStatus]}
-              </ThemedText>
-            </View>
-        )}
+      <ThemedText style={{ marginTop: 6 }}>
+        {TypeTextMap[type]} {name}
+      </ThemedText>
+
+      {/* bottom */}
+      <ThemedText type="defaultSemiBold" style={{ marginTop: 6, fontSize: 16 }}>
+        Order Total : ฿ {price}
+      </ThemedText>
+
+      {/* status */}
+      {type === "rider" && status === "accepted" ? (
+        <View style={styles.statusAccepted}>
+          <SwipeButton
+            label={statusMap[currentStatus]}
+            onSwipeComplete={() => {
+              router.push({
+                pathname: "/(pages)/imageConfirmDelivery",
+                params: { id },
+              });
+            }}
+          />
+        </View>
+      ) : (
+        <View
+          style={[
+            styles.status,
+            { backgroundColor: getStatusColor(currentStatus) },
+          ]}
+        >
+          <ThemedText type="defaultSemiBold" style={{ color: Colors.white }}>
+            {statusMap[currentStatus]}
+          </ThemedText>
+        </View>
+      )}
     </View>
   );
 }
@@ -132,8 +179,18 @@ export function formatDateTime(isoString: string) {
   const date = new Date(isoString);
 
   const thaiMonths = [
-    "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
-    "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
+    "ม.ค.",
+    "ก.พ.",
+    "มี.ค.",
+    "เม.ย.",
+    "พ.ค.",
+    "มิ.ย.",
+    "ก.ค.",
+    "ส.ค.",
+    "ก.ย.",
+    "ต.ค.",
+    "พ.ย.",
+    "ธ.ค.",
   ];
 
   const day = date.getDate();
@@ -162,8 +219,8 @@ const styles = StyleSheet.create({
     width: 320,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: 'space-between',
-    paddingBottom: 6
+    justifyContent: "space-between",
+    paddingBottom: 6,
   },
   row: {
     width: 320,
@@ -174,32 +231,32 @@ const styles = StyleSheet.create({
     height: 25,
     width: 25,
     borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     borderColor: Colors.primary,
-    borderWidth: 1
+    borderWidth: 1,
   },
   status: {
-    flexDirection: 'row',
-    position: 'absolute',
+    flexDirection: "row",
+    position: "absolute",
     right: 12,
     bottom: 15,
     paddingVertical: 4,
     paddingHorizontal: 6,
     width: 120,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 20
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 20,
   },
   statusAccepted: {
     marginTop: 10,
-    flexDirection: 'row',
-    width: '100%',
+    flexDirection: "row",
+    width: "100%",
     paddingVertical: 4,
     paddingHorizontal: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 20
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 20,
   },
   modalBackground: {
     flex: 1,
