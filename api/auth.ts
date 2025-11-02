@@ -39,3 +39,24 @@ export async function signUp(
   });
   return data;
 }
+
+export interface UserProfile {
+  user_id: string;
+  username: string;
+  fname: string;
+  lname: string;
+  gender: string;
+  profile_image_url: string;
+  wallet: string;
+}
+
+export async function getUserProfile(): Promise<UserProfile> {
+  const token = await SecureStore.getItem("token");
+  const { data } = await axios.get(`${EXPO_API}/v1/user/`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return data;
+}
