@@ -41,12 +41,8 @@ export default function PingDropOffLocation() {
     longitudeDelta: 0.0421,
   });
 
-  const [selectedLocation, setSelectedLocation] = useState<{
-    latitude: number;
-    longitude: number;
-    address?: string;
-    imageUrl?: string;
-  } | null>(null);
+  const [selectedLocation, setSelectedLocation] =
+    useState<DropOffLocation | null>(null);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [locationLoadingMessage, setLocationLoadingMessage] = useState(
@@ -105,12 +101,12 @@ export default function PingDropOffLocation() {
       };
 
       setRegion(newRegion);
-      setSelectedLocation({
-        latitude: fixedLatitude,
-        longitude: fixedLongitude,
-        address: "Current Location",
-        imageUrl: undefined,
-      });
+      // setSelectedLocation({
+      //   latitude: fixedLatitude,
+      //   longitude: fixedLongitude,
+      //   address: "Current Location",
+      //   imageUrl: undefined,
+      // });
 
       // Update WebView map
       if (webViewRef.current) {
@@ -134,9 +130,14 @@ export default function PingDropOffLocation() {
 
   const handleConfirm = () => {
     if (selectedLocation) {
-      // Pass the selected location back to the previous screen
-      router.back();
-      // You can use router.setParams or context/state management to pass data
+      router.push({
+        pathname: "/(pages)/summaryOrder",
+        params: {
+          dropOffLocationId: selectedLocation.dropoff_id,
+          dropOffLocationName: selectedLocation.name,
+          dropOffLocationDetail: selectedLocation.detail,
+        },
+      });
     } else {
       Alert.alert(
         "Please select a drop-off location",
@@ -253,24 +254,7 @@ export default function PingDropOffLocation() {
             });
             
             // Add current location marker if available
-            ${
-              selectedLocation &&
-              selectedLocation.address === "Current Location"
-                ? `
-            currentLocationMarker = L.marker([${selectedLocation.latitude}, ${selectedLocation.longitude}], {icon: currentLocationIcon})
-                .addTo(map)
-                .bindPopup('Current Location', {closeButton: false, autoClose: false, closeOnClick: false});
-            // Disable click events on current location marker
-            currentLocationMarker.off('click');
-            `
-                : selectedLocation
-                  ? `
-            marker = L.marker([${selectedLocation.latitude}, ${selectedLocation.longitude}], {icon: selectedLocationIcon})
-                .addTo(map)
-                .bindPopup('${selectedLocation.address || "Selected Location"}');
-            `
-                  : ""
-            }
+            
             
             // Add drop-off location markers
             var dropOffIcon = L.icon({
@@ -351,6 +335,7 @@ export default function PingDropOffLocation() {
                     
                     window.ReactNativeWebView.postMessage(JSON.stringify({
                         type: 'dropOffLocationSelected',
+                        dropoff_id: '${location.dropoff_id}',
                         latitude: ${parseFloat(location.latitude)},
                         longitude: ${parseFloat(location.longitude)},
                         name: '${location.name}',
@@ -416,10 +401,12 @@ export default function PingDropOffLocation() {
       if (data.type === "dropOffLocationSelected") {
         // Handle drop-off location selection
         setSelectedLocation({
-          latitude: data.latitude,
-          longitude: data.longitude,
-          address: `${data.name} - ${data.detail}`,
-          imageUrl: data.imageUrl,
+          dropoff_id: data.dropoff_id,
+          latitude: data.latitude.toString(),
+          longitude: data.longitude.toString(),
+          name: data.name,
+          detail: data.detail,
+          image_url: data.imageUrl,
         });
 
         // Don't update region to prevent map re-rendering when clicking markers
@@ -518,15 +505,15 @@ export default function PingDropOffLocation() {
                 </View>
                 <View style={styles.locationHeaderText}>
                   <ThemedText style={styles.locationTitle}>
-                    {selectedLocation.address || "Selected Location"}
+                    {selectedLocation.name || "Selected Location"}
                   </ThemedText>
                 </View>
               </View>
 
-              {selectedLocation.imageUrl ? (
+              {selectedLocation.image_url ? (
                 <View style={styles.imageContainer}>
                   <Image
-                    source={{ uri: selectedLocation.imageUrl }}
+                    source={{ uri: selectedLocation.image_url }}
                     style={styles.locationImage}
                     resizeMode="cover"
                   />
