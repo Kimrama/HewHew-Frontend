@@ -3,6 +3,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import React, { useRef } from "react";
 import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
+import { ThemedText } from "./ThemedText";
 
 // ---------- Define Type for CartItem ----------
 export interface CartItemType {
@@ -65,9 +66,9 @@ export default function CartItem({
       <View style={styles.cartItem}>
         <Image source={imageSource} style={styles.itemImage} />
         <View style={styles.itemInfo}>
-          <Text style={styles.itemName}>{item.name}</Text>
-          <Text style={styles.itemDescription}>{item.detail}</Text>
-          <Text style={styles.itemPrice}>฿ {item.price}</Text>
+          <ThemedText style={styles.itemName}>{item.name}</ThemedText>
+          <ThemedText style={styles.itemDescription}>{item.detail}</ThemedText>
+          <ThemedText style={styles.itemPrice}>฿ {item.price}</ThemedText>
           <View style={styles.quantityControl}>
             <Pressable
               style={styles.qtyBtn}

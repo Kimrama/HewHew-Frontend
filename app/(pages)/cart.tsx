@@ -85,13 +85,15 @@ export default function CartPage() {
       >
         <SafeAreaView style={{ flex: 1 }}>
           <View style={styles.storeHeader}>
-            <ThemedText style={styles.storeName}>
+            <ThemedText type='subtitle'>
               {items[0]?.storeName || "Your Order"}
             </ThemedText>
-            <View style={styles.itemCountBadge}>
-              <ThemedText style={styles.itemCountText}>{totalItems}</ThemedText>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <View style={styles.itemCountBadge}>
+                <ThemedText style={styles.itemCountText}>{totalItems}</ThemedText>
+              </View>
+              <ThemedText style={styles.itemCountLabel}>รายการ</ThemedText>
             </View>
-            <ThemedText style={styles.itemCountLabel}>items</ThemedText>
           </View>
 
           <FlatList
@@ -164,6 +166,7 @@ const styles = StyleSheet.create({
   storeHeader: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 10,

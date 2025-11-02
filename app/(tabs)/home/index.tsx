@@ -316,9 +316,9 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   cartButton: {
-    position: "absolute",
-    right: 25,
-    bottom: 20,
+    position: 'fixed',
+    left: 340,
+    bottom: 0,
     backgroundColor: Colors.primary,
     width: 50,
     height: 50,
