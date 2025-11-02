@@ -104,7 +104,7 @@ export function OrderBlock({ name, canteen, store, appointmentTime, deliveryMeth
                 <ThemedText>วันที่ {formatDateTime(appointmentTime)}</ThemedText>
             </View>
             
-            {type !== "myOrderDetail" && (
+            {type === "myDeliveryDetail" && (
                 <View style={[styles.row, { paddingBottom: 0 }]}>
                     <ThemedText type="defaultSemiBold" style={{ fontSize: 16 }}>
                     ค่าส่งที่จะได้รับ
