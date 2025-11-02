@@ -2,11 +2,12 @@ import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
 import { OrderProvider } from "@/store/order-context";
 import { Ionicons } from "@expo/vector-icons";
-import { Tabs } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
 
   return (
     <OrderProvider>
@@ -40,6 +41,12 @@ export default function TabsLayout() {
               />
             ),
           }}
+          listeners={{
+            tabPress: (e) => {
+              e.preventDefault();
+              router.replace("/(tabs)/home");
+            },
+          }}
         />
         <Tabs.Screen
           name="order"
@@ -54,6 +61,12 @@ export default function TabsLayout() {
                 size={size}
               />
             ),
+          }}
+          listeners={{
+            tabPress: (e) => {
+              e.preventDefault();
+              router.replace("/(tabs)/order");
+            },
           }}
         />
         <Tabs.Screen
@@ -70,12 +83,18 @@ export default function TabsLayout() {
               />
             ),
           }}
+          listeners={{
+            tabPress: (e) => {
+              e.preventDefault();
+              router.replace("/(tabs)/payment");
+            },
+          }}
         />
         <Tabs.Screen
           name="profile/index"
           options={{
             tabBarLabel: ({ focused, color }) => (
-              <ThemedText style={{ color: color }}>Home</ThemedText>
+              <ThemedText style={{ color: color }}>Profile</ThemedText>
             ),
             tabBarIcon: ({ color, size, focused }) => (
               <Ionicons
@@ -84,6 +103,12 @@ export default function TabsLayout() {
                 size={size}
               />
             ),
+          }}
+          listeners={{
+            tabPress: (e) => {
+              e.preventDefault();
+              router.replace("/(tabs)/profile");
+            },
           }}
         />
         <Tabs.Screen
