@@ -57,6 +57,15 @@ export interface DropOff {
   detail: string;
 }
 
+export interface Noti {
+  notification_id: string;
+  order_id: string;
+  receiver_id: string
+  topic: string;
+  message: string;
+  time_stamp: string;
+}
+
 export async function getOrder(): Promise<Order[]> {
   const { data } = await axios.get(`${EXPO_API}/v1/order/available`, {
     headers: {
@@ -256,6 +265,7 @@ export async function getUser(): Promise<User> {
       Authorization: `Bearer ${token}`,
     },
   });
+
   console.log("User data fetched:", data);
   return data; // data คือ user object เดียว
 }
@@ -289,6 +299,17 @@ export async function getCanteens(): Promise<Canteen[]> {
 export async function getDropoffs(): Promise<DropOff[]> {
   const token = await SecureStore.getItem("token");
   const { data } = await axios.get(`${EXPO_API}/v1/dropOff/`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return data;
+}
+
+export async function getNoti(userId: string): Promise<Noti[]> {
+  const token = await SecureStore.getItem("token");
+  const { data } = await axios.get(`${EXPO_API}/v1/order/notifications/${userId}`, {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,

@@ -96,6 +96,7 @@ const ProfileScreen = () => {
       </View>
 
       {/* Username */}
+<<<<<<< HEAD
       <ThemedText style={styles.username}>
         {userProfile?.username || "username"}
       </ThemedText>
@@ -103,6 +104,10 @@ const ProfileScreen = () => {
         {userProfile?.fname} {userProfile?.lname}
       </ThemedText>
 
+=======
+      <ThemedText style={styles.username}>{userProfile?.username || 'username'}</ThemedText>
+      <ThemedText style={styles.fullName}>{userProfile?.fname} {userProfile?.lname}</ThemedText>
+>>>>>>> origin/dev/sp1
       {/* Edit Profile */}
       <Pressable style={styles.editButton}>
         <ThemedText style={styles.editThemedText}>Edit Profile</ThemedText>

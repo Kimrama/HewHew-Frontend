@@ -89,6 +89,15 @@ export default function PagesLayout() {
           headerTitleAlign: "center",
         }}
       />
+      <Stack.Screen
+        name="myDeliveryDetail"
+        options={{
+          headerTitle: () => (
+            <ThemedText type="subtitle">My Delivery Detail</ThemedText>
+          ),
+          headerTitleAlign: "center",
+        }}
+      />
     </Stack>
   );
 }
