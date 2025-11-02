@@ -72,7 +72,6 @@ export default function SearchOrderPage() {
 
   return (
     <LinearGradient colors={["#FAE9E8", "#FFFFFF"]} style={{ flex: 1 }}>
-      
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.container}>
        
         {/* 🔍 Search Bar */}
@@ -112,7 +111,7 @@ export default function SearchOrderPage() {
         </View>
 
         {/* 📍 จุดส่ง */}
-        <ThemedText style={[styles.sectionTitle, { marginTop: 10 }]}>จุดส่งอาหาร</ThemedText>
+        <ThemedText style={[styles.sectionTitle, { marginTop: 20 }]}>จุดส่งอาหาร</ThemedText>
         <View style={styles.filterRow}>
           {dropoffs.map((d) => (
             <Pressable
@@ -156,16 +155,7 @@ export default function SearchOrderPage() {
             <ThemedText>ไม่พบออเดอร์ที่ตรงกับเงื่อนไข</ThemedText>
           </View>
         )}
-        
       </ScrollView>
-      <View style={styles.confirmButton}>
-        <ThemedButton
-              title={"เริ่มการจัดส่ง"}
-              variant="primary"
-              onPress={() => router.push("/(tabs)/order/confirmOrder")}
-            />
-           </View> 
-      
     </LinearGradient>
   );
 }
@@ -173,7 +163,7 @@ export default function SearchOrderPage() {
 const styles = StyleSheet.create({
   container: { padding: 20, paddingBottom: 100 },
   searchContainer: {
-    marginTop: 20,
+      
     alignItems: "center",   
   },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
@@ -192,12 +182,4 @@ const styles = StyleSheet.create({
   filterActive: { backgroundColor: "#3FA268" },
   filterThemedText: { color: "#3FA268", fontWeight: "500" },
   filterThemedTextActive: { color: "#fff" },
-  confirmButton: { marginTop: 20, 
-    alignItems: "center",
-    marginVertical: 30,
-    position: "absolute",
-    left: 30,
-    bottom: 80,
-
-  },
 });

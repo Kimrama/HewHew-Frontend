@@ -243,3 +243,51 @@ export async function confirmOrderbyRider(
   });
   return data;
 }
+
+//Som
+export async function getUser(): Promise<Order[]> {
+  const { data } = await axios.get(`${EXPO_API}/v1/user/`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${SecureStore.getItem("token")}`,
+    },
+  });
+  return data;
+}
+
+export interface Canteen {
+  CanteenName: string;
+  Latitude: string;
+  Longitude: string;
+}
+
+export interface DropOff {
+  dropoff_id: string;
+  name: string;
+  detail: string;
+  image_url: string;
+  latitude: string;
+  longitude: string;
+}
+
+export async function getCanteens(): Promise<Canteen[]> {
+  const token = await SecureStore.getItem("token");
+  const { data } = await axios.get(`${EXPO_API}/v1/canteens`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return data.canteens;
+}
+
+export async function getDropoffs(): Promise<DropOff[]> {
+  const token = await SecureStore.getItem("token");
+  const { data } = await axios.get(`${EXPO_API}/v1/dropOff/`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return data;
+}
