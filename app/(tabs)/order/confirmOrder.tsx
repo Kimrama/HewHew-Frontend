@@ -167,9 +167,9 @@ export default function ConfirmOrder() {
             </View>
 
             {/* List items */}
-            {acceptedOrders.map((order, index) => (
-              <View key={order.order_id}>
-                {renderItem({ item: order, index, onRemove: handleRemoveOrder, })}
+            {orders.map((order, index) => (
+            <View key={order.order_id}>
+              {renderItem({ item: order, index, onRemove: handleRemoveOrder })}
                 {index !== acceptedOrders.length - 1 && (
                   <View
                     style={{
