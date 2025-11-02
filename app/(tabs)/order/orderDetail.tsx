@@ -102,12 +102,12 @@ export default function OrderDetail() {
             <ThemedText>{order.canteen_name}</ThemedText>
           </View>
 
-          <View style={styles.row}>
+          {/* <View style={styles.row}>
             <View style={styles.amount}>
               <ThemedText>{order.totalQuantity}</ThemedText>
             </View>
             <ThemedText style={{ paddingLeft: 10 }}>รายการ</ThemedText>
-          </View>
+          </View> */}
         </View>
 
         {/* order */}
