@@ -7,6 +7,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
 import { AuthContext } from "@/store/auth-context";
 import { useCart } from "@/store/cart-context";
+import { MaterialIcons } from "@expo/vector-icons";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -105,32 +106,65 @@ export default function MenuPage() {
       end={{ x: 0, y: 1 }}
       style={styles.container}
     >
-      <View style={styles.header}>
-        <Image source={imageSource} style={styles.headerImage} />
-        <View style={styles.overlay} />
-        <SafeAreaView style={styles.headerContent}>
-          <View style={styles.storeInfo}>
-            <ThemedText style={styles.storeName}>{store?.name}</ThemedText>
-            <View style={styles.locationContainer}>
-              <Ionicons name="location-sharp" size={16} color="white" />
-              <ThemedText style={styles.storeLocation}>
-                {store?.canteen_name}
-              </ThemedText>
-            </View>
+      {store?.state === false ? (
+        <>
+          <View style={styles.closedBanner}>
+            <MaterialIcons name='store' size={24} style={{color: Colors.white}}></MaterialIcons>
+            <ThemedText type='subtitle' style={{color: Colors.white}}>ปิดให้บริการในขณะนี้</ThemedText>
           </View>
-        </SafeAreaView>
-      </View>
+          <View style={styles.headerImg}>
+            <Image source={imageSource} style={styles.storeImg} />
+            <View style={styles.Overlay} />
+
+            <ThemedText type="titleMd" style={styles.headerName}>
+              {store?.name}
+            </ThemedText>
+            <MaterialIcons
+              name="location-pin"
+              size={25}
+              style={styles.headerIcon}
+            />
+
+            <ThemedText style={styles.headerCanteen}>
+              {store?.canteen_name}
+            </ThemedText>
+
+            <View style={styles.headerOverlay}></View>
+          </View>
+        </>
+      ) : (
+        <>
+          <View style={styles.headerImg}>
+            <Image source={imageSource} style={styles.storeImg} />
+            <View style={styles.Overlay} />
+
+            <ThemedText type="titleMd" style={styles.headerName}>
+              {store?.name}
+            </ThemedText>
+
+            <MaterialIcons
+              name="location-pin"
+              size={25}
+              style={styles.headerIcon}
+            />
+
+            <ThemedText style={styles.headerCanteen}>
+              {store?.canteen_name}
+            </ThemedText>
+          </View>
+        </>
+      )}
 
       <View style={styles.menuContainer}>
         <View style={styles.searchAndTags}>
-          <View style={{ marginTop: 10 }}>
-            <SearchBar
-              placeholder="Search Menu"
-              value={searchText}
-              onChangeText={setSearchText}
-            />
+          <View style={{ marginVertical: 15, alignItems: "center" }}>
+              <SearchBar
+                placeholder="Search Menu"
+                value={searchText}
+                onChangeText={setSearchText}
+              />
           </View>
-          <View style={{ marginTop: 10 }}>
+          <View style={{ marginLeft: 10 }}>
             <HorizontalTags
               tags={allTags}
               selectedTag={selectedTag}
@@ -139,31 +173,37 @@ export default function MenuPage() {
           </View>
         </View>
 
-        <FlatList
-          data={filteredMenu}
-          keyExtractor={(item) => item.menu_id}
-          renderItem={({ item }) => (
-            <MenuBlock
-              name={item.name}
-              info={item.detail}
-              price={item.price}
-              status={item.status}
-              imageUrl={fixSupabaseUrl(item.image_url)}
-              count={getCartItemQuantity(item.menu_id)}
-              onCountChange={(newCount) => {
-                if (newCount > getCartItemQuantity(item.menu_id)) {
-                  addToCart(item.menu_id, store?.name);
-                } else {
-                  updateQuantity(item.menu_id, newCount);
+        <View style={{alignItems: "center" }}>
+          <FlatList
+            data={filteredMenu}
+            keyExtractor={(item) => item.menu_id}
+            renderItem={({ item }) => (
+              <MenuBlock
+                name={item.name}
+                info={item.detail}
+                price={item.price}
+                status={
+                  item.status === 'unavailable' || store?.state === false
+                    ? 'unavailable'
+                    : item.status
                 }
-              }}
-            />
-          )}
-          contentContainerStyle={[
-            styles.listContentContainer,
-            { paddingBottom: insets.bottom + (totalItems > 0 ? 80 : 20) },
-          ]}
-        />
+                imageUrl={fixSupabaseUrl(item.image_url)}
+                count={getCartItemQuantity(item.menu_id)}
+                onCountChange={(newCount) => {
+                  if (newCount > getCartItemQuantity(item.menu_id)) {
+                    addToCart(item.menu_id, store?.name);
+                  } else {
+                    updateQuantity(item.menu_id, newCount);
+                  }
+                }}
+              />
+            )}
+            contentContainerStyle={[
+              styles.listContentContainer,
+              { paddingBottom: insets.bottom + (totalItems > 0 ? 80 : 20) },
+            ]}
+          />
+        </View>
       </View>
 
       {totalItems > 0 && (
@@ -174,7 +214,7 @@ export default function MenuPage() {
           ]}
         >
           <ThemedButton
-            title={`Go to Cart (${totalItems} items)`}
+            title={`เริ่มต้นคำสั่งซื้อ (${totalItems} รายการ)`}
             onPress={handleCheckout}
             variant="primary"
             style={{ width: "100%" }}
@@ -190,7 +230,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    height: 200,
+    height: 150,
     backgroundColor: "#000",
   },
   headerImage: {
@@ -240,6 +280,7 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   searchAndTags: {
+    alignContent: "center",
     paddingHorizontal: 15,
     marginBottom: 10,
   },
@@ -264,4 +305,66 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 16,
   },
+  headerImg: {
+    height: 100,
+    width: 412,
+    position: "relative",
+  },
+  headerOverlay: {
+    height: 100,
+    width: 412,
+    position: "absolute",
+    top: 0,
+    left: 0,
+    backgroundColor: "rgba(195, 195, 195, 0.5)",
+    zIndex: 10,
+  },
+  storeImg: {
+    height: "100%",
+    width: "100%",
+  },
+  Overlay: {
+    height: "100%",
+    width: "100%",
+    position: "absolute",
+    top: 0,
+    left: 0,
+    backgroundColor: "rgba(0,0,0,0.4)",
+  },
+  headerName: {
+    position: "absolute",
+    top: 15,
+    left: 30,
+    color: Colors.white,
+  },
+  headerIcon: {
+    color: Colors.secondary,
+    marginRight: 20,
+    position: "absolute",
+    top: 50,
+    left: 30,
+  },
+  headerCanteen: {
+    position: "absolute",
+    top: 55,
+    left: 60,
+    color: Colors.white,
+  },
+  button: {
+    marginVertical: 30,
+    position: "absolute",
+    left: 30,
+    bottom: 30,
+  },
+  closedBanner: {
+    flexDirection: "row",
+    gap: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 10,
+    backgroundColor: Colors.red,
+    // borderTopLeftRadius: 20,
+    // borderTopRightRadius: 20,
+    height: 45,
+  }
 });
