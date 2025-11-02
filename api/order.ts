@@ -322,3 +322,24 @@ export async function getDropoffs(): Promise<DropOff[]> {
   });
   return data;
 }
+export interface Noti {
+  notification_id: string;
+  order_id: string;
+  receiver_id: string;
+  topic: string;
+  message: string;
+  time_stamp: string;
+}
+export async function getNoti(userId: string): Promise<Noti[]> {
+  const token = await SecureStore.getItem("token");
+  const { data } = await axios.get(
+    `${EXPO_API}/v1/order/notifications/${userId}`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return data;
+}
