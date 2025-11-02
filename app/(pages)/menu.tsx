@@ -1,40 +1,44 @@
-import { getStorebyId, Store, getMenubyId, Menu } from "@/api/store";
+import { getMenubyId, getStorebyId, Menu, Store } from "@/api/store";
 import { HorizontalTags } from "@/components/HorizontalTags";
 import { MenuBlock } from "@/components/MenuBlock";
 import { SearchBar } from "@/components/SearchBar";
 import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
-import { sampleMenu } from "@/sampleData/sampleMenu";
-import { MaterialIcons } from "@expo/vector-icons";
+import { AuthContext } from "@/store/auth-context";
+import { useCart } from "@/store/cart-context";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useState, useRef, useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { FlatList, Image, StyleSheet, View } from "react-native";
-import { AuthContext } from "@/store/auth-context";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
-const width = 412;
 const default_image = require("@/assets/images/default-featured-image.jpg");
 
 export default function MenuPage() {
   const router = useRouter();
   const { storeId } = useLocalSearchParams();
-  const [stores, setStores] = useState<Store>();
-  // const imgUri = Array.isArray(image) ? image[0] : image;
-  // const isOpen = states === "true";
+  const [store, setStore] = useState<Store>();
   const [searchText, setSearchText] = useState("");
-  const [selected, setSelected] = useState<string | null>(null);
-  const [menuCounts, setMenuCounts] = useState<{ [key: string]: number }>({});
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [menus, setMenus] = useState<Menu[]>([]);
-  const { isAuthenticated, logout, token } = useContext(AuthContext);
+  const { isAuthenticated } = useContext(AuthContext);
+  const { updateQuantity, getCartItemQuantity, totalItems, addToCart } =
+    useCart();
+  const insets = useSafeAreaInsets();
+
   const fixSupabaseUrl = (url: string | null | undefined) => {
     if (!url || url.trim() === "") return "";
     return url.replace("/render/image/", "/object/");
   };
-  const imageSource = stores?.shop_image_url && stores?.shop_image_url.trim() !== ""
-        ? { uri: fixSupabaseUrl(stores?.shop_image_url) }
-        : default_image;
+
+  const imageSource = store?.shop_image_url
+    ? { uri: fixSupabaseUrl(store.shop_image_url) }
+    : default_image;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -42,10 +46,7 @@ export default function MenuPage() {
         if (!storeId) return;
         const id = Array.isArray(storeId) ? storeId[0] : storeId;
         const response = await getStorebyId(id);
-        console.log(response)
-
-
-        setStores(response);
+        setStore(response);
       } catch (err) {
         console.error(err);
       }
@@ -56,262 +57,211 @@ export default function MenuPage() {
   useEffect(() => {
     const fetchMenus = async () => {
       try {
-        if (!stores?.menus || stores.menus.length === 0) {
-          console.log("No menus found for this store");
+        if (!store?.menus || store.menus.length === 0) {
+          setMenus([]);
           return;
         }
-
-        console.log("Fetching menus for IDs:", stores.menus);
-
         const menuDetails = await Promise.all(
-          stores.menus.map((id: string) => getMenubyId(id))
+          store.menus.map((id: string) => getMenubyId(id))
         );
-
-        console.log("menuDetails:", menuDetails);
         setMenus(menuDetails);
       } catch (err) {
         console.error("Error fetching menus:", err);
       }
     };
     fetchMenus();
-  }, [stores]);
+  }, [store]);
 
-    const filteredMenu = menus.filter((item) => {
+  const handleTagPress = (tag: string) => {
+    if (selectedTag === tag) {
+      setSelectedTag(null);
+    } else {
+      setSelectedTag(tag);
+    }
+  };
+
+  const filteredMenu = menus.filter((item) => {
     const matchesSearch = item.name
       ?.toLowerCase()
       .includes(searchText.toLowerCase());
-
-    const matchesTag = selected
-      ? item.tags[0] === selected || item.tags[1] === selected
-      : true;
-
+    const matchesTag = selectedTag ? item.tags.includes(selectedTag) : true;
     return matchesSearch && matchesTag;
   });
 
+  const allTags = Array.from(new Set(menus.flatMap((item) => item.tags)));
 
-  const clickButton = () => {
+  const handleCheckout = () => {
     if (!isAuthenticated) {
-        router.push("/(auth)/login");
-        return;
-    } else {
-      const cartItems = getCartItems();
-      console.log(cartItems);
-
-      router.push({
-        pathname: "/(pages)/cart",
-        params: {
-          cart: JSON.stringify(cartItems),
-        },
-      });
+      router.push("/(auth)/login");
+      return;
     }
-  }
-
-  const handleCountChange = (menuName: string, newCount: number) => {
-    setMenuCounts((prev) => ({
-      ...prev,
-      [menuName]: newCount,
-    }));
+    router.push("/(pages)/cart");
   };
-
-  const getCartItems = () => {
-    return menus
-      .filter((item) => (menuCounts[item.name] ?? 0) > 0)
-      .map((item) => ({
-        id: item.menu_id,
-        name: item.name,
-        info: item.detail,
-        price: item.price,
-        imageUrl: item.image_url,
-        count: menuCounts[item.name],
-      }));
-  };
-
-  const totalItems = Object.values(menuCounts).reduce((sum, c) => sum + c, 0);
-
-  const totalPrice = menus.reduce((sum, item) => {
-    const count = menuCounts[item.name] ?? 0;
-    return sum + item.price * count;
-  }, 0);
 
   return (
     <LinearGradient
-      colors={Colors.bg}
+      colors={Colors.bg as any}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
-      style={{ flex: 1 }}
+      style={styles.container}
     >
-      {/* <SafeAreaView style={{ flex: 1 }}> */}
-          {stores?.state === false ? (
-            <>
-              <View style={styles.closedBanner}>
-                <MaterialIcons name='store' size={24} style={{color: Colors.white}}></MaterialIcons>
-                <ThemedText type='subtitle' style={{color: Colors.white}}>ปิดให้บริการในขณะนี้</ThemedText>
-              </View>
+      <View style={styles.header}>
+        <Image source={imageSource} style={styles.headerImage} />
+        <View style={styles.overlay} />
+        <SafeAreaView style={styles.headerContent}>
+          <View style={styles.storeInfo}>
+            <ThemedText style={styles.storeName}>{store?.name}</ThemedText>
+            <View style={styles.locationContainer}>
+              <Ionicons name="location-sharp" size={16} color="white" />
+              <ThemedText style={styles.storeLocation}>
+                {store?.canteen_name}
+              </ThemedText>
+            </View>
+          </View>
+        </SafeAreaView>
+      </View>
 
-              <View style={styles.headerImg}>
-                <Image source={imageSource} style={styles.storeImg} />
-                <View style={styles.Overlay} />
-
-                <ThemedText type="titleMd" style={styles.headerName}>
-                  {stores?.name}
-                </ThemedText>
-
-                <MaterialIcons
-                  name="location-pin"
-                  size={25}
-                  style={styles.headerIcon}
-                />
-
-                <ThemedText style={styles.headerCanteen}>
-                  {stores?.canteen_name}
-                </ThemedText>
-
-                <View style={styles.headerOverlay}></View>
-              </View>
-            </>
-          ) : (
-            <>
-              <View style={styles.headerImg}>
-                <Image source={imageSource} style={styles.storeImg} />
-                <View style={styles.Overlay} />
-
-                <ThemedText type="titleMd" style={styles.headerName}>
-                  {stores?.name}
-                </ThemedText>
-
-                <MaterialIcons
-                  name="location-pin"
-                  size={25}
-                  style={styles.headerIcon}
-                />
-
-                <ThemedText style={styles.headerCanteen}>
-                  {stores?.canteen_name}
-                </ThemedText>
-              </View>
-            </>
-          )}
-       
-
-
-        {/* search bar + tag */}
-        <View style={{ paddingVertical: 20, alignItems: "center" }}>
-          <SearchBar
-            placeholder="Search Menu"
-            value={searchText}
-            onChangeText={setSearchText}
-          />
+      <View style={styles.menuContainer}>
+        <View style={styles.searchAndTags}>
+          <View style={{ marginTop: 10 }}>
+            <SearchBar
+              placeholder="Search Menu"
+              value={searchText}
+              onChangeText={setSearchText}
+            />
+          </View>
+          <View style={{ marginTop: 10 }}>
+            <HorizontalTags
+              tags={allTags}
+              selectedTag={selectedTag}
+              onPressTag={handleTagPress}
+            />
+          </View>
         </View>
-        <View style={{ paddingLeft: 20, paddingBottom: 15 }}>
-          <HorizontalTags
-            tags={stores?.tags || []}
-            selectedTag={selected}
-            onPressTag={(tag) => setSelected(tag === selected ? null : tag)}
-          />
-        </View>
-        
+
         <FlatList
           data={filteredMenu}
-          keyExtractor={(item, idx) => `${item.name}-${idx}`}
-          contentContainerStyle={{ alignItems: "center" }}
-          ListFooterComponent={
-            stores?.state === false ? null : (
-              <View style={{ marginBottom: 120 }} />
-            )
-          }
+          keyExtractor={(item) => item.menu_id}
           renderItem={({ item }) => (
             <MenuBlock
               name={item.name}
               info={item.detail}
               price={item.price}
-              imageUrl={item.image_url || ''}
-              status={
-                item.status === 'unavailable' || stores?.state === false
-                  ? 'unavailable'
-                  : item.status
-              }
-              count={menuCounts[item.name] || 0}
-              onCountChange={handleCountChange}
+              status={item.status}
+              imageUrl={fixSupabaseUrl(item.image_url)}
+              count={getCartItemQuantity(item.menu_id)}
+              onCountChange={(newCount) => {
+                if (newCount > getCartItemQuantity(item.menu_id)) {
+                  addToCart(item.menu_id, store?.name);
+                } else {
+                  updateQuantity(item.menu_id, newCount);
+                }
+              }}
             />
           )}
+          contentContainerStyle={[
+            styles.listContentContainer,
+            { paddingBottom: insets.bottom + (totalItems > 0 ? 80 : 20) },
+          ]}
         />
+      </View>
 
-        {stores?.state === false ? (null) : (
-          <View style={styles.button}>
-            <ThemedButton
-              title={`${totalItems} รายการ`}
-              title2={`${totalPrice} ฿`}
-              variant="primary"
-              onPress={clickButton}
-            />
-          </View>
-        )}
-      {/* </SafeAreaView> */}
+      {totalItems > 0 && (
+        <View
+          style={[
+            styles.checkoutButtonContainer,
+            { paddingBottom: insets.bottom + 10 },
+          ]}
+        >
+          <ThemedButton
+            title={`Go to Cart (${totalItems} items)`}
+            onPress={handleCheckout}
+            variant="primary"
+            style={{ width: "100%" }}
+          />
+        </View>
+      )}
     </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImg: {
-    height: 100,
-    width: width,
-    position: "relative",
+  container: {
+    flex: 1,
   },
-  headerOverlay: {
-    height: 100,
-    width: width,
-    position: "absolute",
-    top: 0,
-    left: 0,
-    backgroundColor: "rgba(195, 195, 195, 0.5)",
-    zIndex: 10,
+  header: {
+    height: 200,
+    backgroundColor: "#000",
   },
-  storeImg: {
-    height: "100%",
+  headerImage: {
     width: "100%",
-  },
-  Overlay: {
     height: "100%",
-    width: "100%",
     position: "absolute",
-    top: 0,
-    left: 0,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.4)",
   },
-  headerName: {
-    position: "absolute",
-    top: 15,
-    left: 30,
-    color: Colors.white,
+  headerContent: {
+    flex: 1,
+    paddingHorizontal: 15,
+    justifyContent: "flex-end",
+    paddingBottom: 20,
   },
-  headerIcon: {
-    color: Colors.secondary,
-    marginRight: 20,
+  backButton: {
     position: "absolute",
     top: 50,
-    left: 30,
+    left: 15,
+    zIndex: 10,
+    padding: 5,
   },
-  headerCanteen: {
-    position: "absolute",
-    top: 55,
-    left: 60,
+  storeInfo: {},
+  storeName: {
+    fontSize: 24,
+    fontWeight: "bold",
     color: Colors.white,
+    marginBottom: 5,
   },
-  button: {
-    marginVertical: 30,
-    position: "absolute",
-    left: 30,
-    bottom: 30,
-  },
-  closedBanner: {
+  locationContainer: {
     flexDirection: "row",
-    gap: 10,
-    justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 10,
-    backgroundColor: Colors.red,
+  },
+  storeLocation: {
+    fontSize: 16,
+    color: Colors.white,
+    marginLeft: 5,
+  },
+  menuContainer: {
+    flex: 1,
+    backgroundColor: "transparent",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    height: 45,
-  }
+    marginTop: -20,
+    paddingTop: 20,
+  },
+  searchAndTags: {
+    paddingHorizontal: 15,
+    marginBottom: 10,
+  },
+  listContentContainer: {
+    paddingHorizontal: 15,
+  },
+  checkoutButtonContainer: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    backgroundColor: "white",
+    borderTopWidth: 1,
+    borderTopColor: "#f0f0f0",
+  },
+  checkoutPrice: {
+    position: "absolute",
+    right: 20,
+    color: Colors.white,
+    fontWeight: "bold",
+    fontSize: 16,
+  },
 });
