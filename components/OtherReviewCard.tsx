@@ -48,6 +48,7 @@ export const OtherReviewCard = ({
   // ✅ ฟังก์ชันกดเข้าโปรไฟล์
   const handleProfilePress = () => {
     if (userId) {
+      console.log("Navigating to user profile:", userId);
       router.push(`/otherProfile?userId=${userId}`);
     }
   };

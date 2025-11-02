@@ -2,10 +2,12 @@ import { ThemedText } from '@/components/ThemedText';
 import { Colors } from '@/constants/Colors';
 import React, { useState } from 'react';
 
+import { useRouter } from 'expo-router';
 import { Image, Modal, Pressable, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { OtherUserTag } from './OtherUserTag';
 import { RatingStars } from './RatingStars';
+
 
 interface ReviewCardProps {
   id: string;
@@ -50,10 +52,19 @@ export const ReviewCard = ({
   date,
   avatarUrl,
   otherUserAvatarUrl,
+  otherUserId,
   onEdit,
   onRemove,
 }: ReviewCardProps) => {
   const [modalVisible, setModalVisible] = useState(false);
+  const router = useRouter();
+  const handleNavigateToUserProfile = () => {
+    if (otherUserId) {
+      console.log("Navigating to user profile:", otherUserId);
+      router.push(`/otherProfile?userId=${otherUserId}`);
+    }
+  };
+
 
   return (
     <View style={styles.card}>
@@ -82,63 +93,66 @@ export const ReviewCard = ({
 
       {comment ? <ThemedText style={styles.commentThemedText}>{comment}</ThemedText> : null}
 
-      <OtherUserTag name={otherUser} avatarUrl={otherUserAvatarUrl} />
+      <Pressable onPress={handleNavigateToUserProfile}>
+        {/* <ThemedText style={styles.menuThemedText}>{otherUserId}</ThemedText> */}
 
+        <OtherUserTag name={otherUser} avatarUrl={otherUserAvatarUrl} />
+      </Pressable>
       {/* Modal Popup */}
       <Modal
-  visible={modalVisible}
-  transparent
-  animationType="slide"
-  onRequestClose={() => setModalVisible(false)}
-  statusBarTranslucent={true} // เพิ่มถ้าใช้ Android และอยากให้ status bar ทึบโปร่ง
->
-  {/* Overlay ด้านนอก */}
-  <Pressable
-    style={styles.modalOverlay}
-    onPress={() => setModalVisible(false)}
-  >
-    {/* หลีกเลี่ยงการปิด modal เมื่อกดภายใน */}
-    <Pressable style={styles.actionSheetWrapper} onPress={(e) => e.stopPropagation()}>
-      {/* SafeAreaView คุม safe area ด้านล่างและบน */}
-      <SafeAreaView edges={['bottom']} style={{ backgroundColor: 'transparent' }}>
-        {/* กลุ่ม Edit / Remove */}
-        <View style={styles.actionSheetContainer}>
-          <TouchableOpacity
-            style={[styles.actionButton, styles.actionButtonTop]}
-            onPress={() => {
-              setModalVisible(false);
-              onEdit(id);
-            }}
-            activeOpacity={0.7}
-          >
-            <ThemedText style={styles.actionText}>Edit</ThemedText>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.actionButton, styles.actionButtonBottom]}
-            onPress={() => {
-              setModalVisible(false);
-              onRemove(id);
-            }}
-            activeOpacity={0.7}
-          >
-            <ThemedText style={[styles.actionText, styles.deleteThemedText]}>Remove</ThemedText>
-          </TouchableOpacity>
-        </View>
+        visible={modalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)}
+        statusBarTranslucent={true} // เพิ่มถ้าใช้ Android และอยากให้ status bar ทึบโปร่ง
+      >
+        {/* Overlay ด้านนอก */}
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setModalVisible(false)}
+        >
+          {/* หลีกเลี่ยงการปิด modal เมื่อกดภายใน */}
+          <Pressable style={styles.actionSheetWrapper} onPress={(e) => e.stopPropagation()}>
+            {/* SafeAreaView คุม safe area ด้านล่างและบน */}
+            <SafeAreaView edges={['bottom']} style={{ backgroundColor: 'transparent' }}>
+              {/* กลุ่ม Edit / Remove */}
+              <View style={styles.actionSheetContainer}>
+                <TouchableOpacity
+                  style={[styles.actionButton, styles.actionButtonTop]}
+                  onPress={() => {
+                    setModalVisible(false);
+                    onEdit(id);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <ThemedText style={styles.actionText}>Edit</ThemedText>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.actionButton, styles.actionButtonBottom]}
+                  onPress={() => {
+                    setModalVisible(false);
+                    onRemove(id);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <ThemedText style={[styles.actionText, styles.deleteThemedText]}>Remove</ThemedText>
+                </TouchableOpacity>
+              </View>
 
-        {/* กลุ่ม Cancel */}
-        <View style={[styles.actionSheetContainer, styles.cancelContainer]}>
-          <TouchableOpacity
-            style={[styles.actionButton, styles.actionButtonBottom]}
-            onPress={() => setModalVisible(false)}
-            activeOpacity={0.7}
-          >
-            <ThemedText style={[styles.actionText, styles.cancelThemedText]}>Cancel</ThemedText>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    </Pressable>
-  </Pressable>
-</Modal>
+              {/* กลุ่ม Cancel */}
+              <View style={[styles.actionSheetContainer, styles.cancelContainer]}>
+                <TouchableOpacity
+                  style={[styles.actionButton, styles.actionButtonBottom]}
+                  onPress={() => setModalVisible(false)}
+                  activeOpacity={0.7}
+                >
+                  <ThemedText style={[styles.actionText, styles.cancelThemedText]}>Cancel</ThemedText>
+                </TouchableOpacity>
+              </View>
+            </SafeAreaView>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 };
@@ -205,7 +219,7 @@ const styles = StyleSheet.create({
   /* Modal styles */
   modalOverlay: {
     flex: 1,
-    
+
     backgroundColor: 'rgba(0,0,0,0.3)',
     justifyContent: 'flex-end',
   },
@@ -217,7 +231,7 @@ const styles = StyleSheet.create({
   actionSheetContainer: {
     backgroundColor: '#fefefe',
     borderRadius: 15,
-    marginBottom: 8, 
+    marginBottom: 8,
     overflow: 'hidden',
 
 
@@ -229,7 +243,7 @@ const styles = StyleSheet.create({
   },
 
   cancelContainer: {
-    marginBottom: 16, 
+    marginBottom: 16,
   },
 
   actionButton: {

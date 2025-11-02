@@ -10,6 +10,7 @@ export interface User {
   lname: string;
   gender: string;
   profile_image_url: string;
+  wallet: number;
 }
 
 export interface menu_quantity {

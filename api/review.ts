@@ -53,7 +53,7 @@ export async function getWrittenReviews(): Promise<Review[]> {
       Authorization: `Bearer ${token}`,
     },
   });
-
+  // console.log("Written Reviews Data:", data);
   return data;
 }
 
@@ -102,25 +102,26 @@ export async function postReview(
   );
 }
 
-// --- (ออปชัน) แปลง review พร้อมข้อมูลชื่อ user สำหรับแสดงผลใน UI ---
-export async function mapReviewWithUsers(reviews: Review[]) {
+export async function mapReviewWithUsers(reviews: Review[] | null | undefined) {
+  if (!reviews || !Array.isArray(reviews)) return []; // ป้องกัน null
+
   const result = await Promise.all(
     reviews.map(async (r) => {
       try {
-        const reviewer = await getUserbyId(r.user_reviewer_id);
-        const target = await getUserbyId(r.user_target_id);
+        const reviewer = (await getUserbyId(r.user_reviewer_id)) || {};
+        const target = (await getUserbyId(r.user_target_id)) || {};
 
         return {
           id: r.review_id,
-          username: reviewer.username,
-          avatarUrl: reviewer.profile_image_url,
+          username: reviewer.username || "Unknown",
+          avatarUrl: reviewer.profile_image_url || "",
           rating: r.rating,
           comment: r.comment,
-          otherUser: target.username,
-          otherUserId: target.user_id,
-          otherUserAvatarUrl: target.profile_image_url,
+          otherUser: target.username || "Unknown",
+          otherUserId: target.user_id || "",
+          otherUserAvatarUrl: target.profile_image_url || "",
           date: r.time_stamp,
-          user_reviewer_id: reviewer.user_id,
+          user_reviewer_id: reviewer.user_id || "",
         };
       } catch (err) {
         console.error("mapReviewWithUsers error:", err);
@@ -130,11 +131,11 @@ export async function mapReviewWithUsers(reviews: Review[]) {
           avatarUrl: "",
           rating: r.rating,
           comment: r.comment,
-          otherUser: "",
+          otherUser: "Unknown",
           otherUserId: "", 
           otherUserAvatarUrl: "",
           date: r.time_stamp,
-          
+          user_reviewer_id: "",
         };
       }
     })
@@ -142,3 +143,5 @@ export async function mapReviewWithUsers(reviews: Review[]) {
 
   return result;
 }
+
+
