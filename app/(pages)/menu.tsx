@@ -82,7 +82,7 @@ export default function MenuPage() {
       .includes(searchText.toLowerCase());
 
     const matchesTag = selected
-      ? item.tag1_id === selected || item.tag2_id === selected
+      ? item.tags[0] === selected || item.tags[1] === selected
       : true;
 
     return matchesSearch && matchesTag;
@@ -166,7 +166,7 @@ export default function MenuPage() {
         </View>
         <View style={{ paddingLeft: 20, paddingBottom: 15 }}>
           <HorizontalTags
-            tags={stores?.tags}
+            tags={stores?.tags || []}
             selectedTag={selected}
             onPressTag={(tag) => setSelected(tag === selected ? null : tag)}
           />
@@ -182,9 +182,8 @@ export default function MenuPage() {
               name={item.name}
               info={item.detail}
               price={item.price}
-              imageUrl={item.image_url}
-              tag1={item.tag1_id}
-              tag2={item.tag2_id}
+              imageUrl={item.image_url || ''}
+              status={item.status}
               count={menuCounts[item.name] || 0}
               onCountChange={handleCountChange}
             />

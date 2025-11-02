@@ -11,13 +11,12 @@ type MenuBlockProps = {
   price: number;
   imageUrl: string;
   info: string;
-  tag1?: string;
-  tag2?: string;
+  status: string;
   count: number;
   onCountChange: (menuName: string, newCount: number) => void;
 };
 
-export function MenuBlock({ name, info, price, imageUrl, count, onCountChange }: MenuBlockProps) {
+export function MenuBlock({ name, info, price, status, imageUrl, count, onCountChange }: MenuBlockProps) {
   const [isActive, setIsActive] = useState(false);
   const [isMinus, setIsMinus] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -104,6 +103,23 @@ export function MenuBlock({ name, info, price, imageUrl, count, onCountChange }:
           )}
         </View>
       </View>
+
+      {status == 'unavailable' && (
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: 350,
+            height: 110,
+            borderRadius: 20,
+            backgroundColor: "rgba(140, 140, 140, 0.5)",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+        </View>
+      )}
     </View>
   );
 }
