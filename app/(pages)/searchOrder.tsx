@@ -1,20 +1,12 @@
-import { getCanteens, getDropoffs, getOrder, Order, Canteen, DropOff } from "@/api/order";
-import { OrderCard } from "@/components/OrderInListCard";
-import { SearchBar } from "@/components/SearchBar";
-import { ThemedButton } from "@/components/ThemedButton";
-import { ThemedText } from "@/components/ThemedText";
-import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import {
-  LayoutAnimation,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  UIManager,
-  View,
-} from "react-native";
-import { HorizontalTags } from "@/components/HorizontalTags";
+import { View, ScrollView, StyleSheet, Pressable, LayoutAnimation, Platform, UIManager } from "react-native";
+import { useRouter } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedButton } from "@/components/ThemedButton";
+import { SearchBar } from "@/components/SearchBar";
+import { OrderCard } from "@/components/OrderInListCard";
+import { getOrder, getCanteens, getDropoffs } from "@/api/order";
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -81,6 +73,7 @@ export default function SearchOrderPage() {
   return (
     <LinearGradient colors={["#FAE9E8", "#FFFFFF"]} style={{ flex: 1 }}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.container}>
+       
         {/* 🔍 Search Bar */}
         <View style={styles.searchContainer}>
           <SearchBar
@@ -91,30 +84,57 @@ export default function SearchOrderPage() {
           />
         </View>
 
-        {/* 🏫 จุดรับอาหาร */}
+        {/* 🏫 จุดรับ */}
         <ThemedText style={styles.sectionTitle}>จุดรับอาหาร</ThemedText>
-        <HorizontalTags
-          tags={canteens.map((c) => c.CanteenName)}
-          selectedTag={selectedCanteen}
-          onPressTag={(tag) =>
-            setSelectedCanteen(selectedCanteen === tag ? null : tag)
-          }
-        />
+        <View style={styles.filterRow}>
+          {canteens.map((c) => (
+            <Pressable
+              key={c.CanteenName}
+              style={[
+                styles.filterBtn,
+                selectedCanteen === c.CanteenName && styles.filterActive,
+              ]}
+              onPress={() =>
+                setSelectedCanteen(selectedCanteen === c.CanteenName ? null : c.CanteenName)
+              }
+            >
+              <ThemedText
+                style={[
+                  styles.filterThemedText,
+                  selectedCanteen === c.CanteenName && styles.filterThemedTextActive,
+                ]}
+              >
+                {c.CanteenName}
+              </ThemedText>
+            </Pressable>
+          ))}
+        </View>
 
-        {/* 📍 จุดส่งอาหาร */}
-        <ThemedText style={[styles.sectionTitle, { marginTop: 10 }]}>จุดส่งอาหาร</ThemedText>
-        <HorizontalTags
-          tags={dropoffs.map((d) => d.name)}
-          selectedTag={
-            dropoffs.find((d) => d.dropoff_id === selectedDropoff)?.name ?? null
-          }
-          onPressTag={(tag) => {
-            const drop = dropoffs.find((d) => d.name === tag);
-            if (drop) {
-              setSelectedDropoff(selectedDropoff === drop.dropoff_id ? null : drop.dropoff_id);
-            }
-          }}
-        />
+        {/* 📍 จุดส่ง */}
+        <ThemedText style={[styles.sectionTitle, { marginTop: 20 }]}>จุดส่งอาหาร</ThemedText>
+        <View style={styles.filterRow}>
+          {dropoffs.map((d) => (
+            <Pressable
+              key={d.dropoff_id}
+              style={[
+                styles.filterBtn,
+                selectedDropoff === d.dropoff_id && styles.filterActive,
+              ]}
+              onPress={() =>
+                setSelectedDropoff(selectedDropoff === d.dropoff_id ? null : d.dropoff_id)
+              }
+            >
+              <ThemedText
+                style={[
+                  styles.filterThemedText,
+                  selectedDropoff === d.dropoff_id && styles.filterThemedTextActive,
+                ]}
+              >
+                {d.name}
+              </ThemedText>
+            </Pressable>
+          ))}
+        </View>
 
         {/* 📦 ผลลัพธ์ */}
         <ThemedText style={[styles.sectionTitle, { marginTop: 30 }]}>
@@ -135,17 +155,7 @@ export default function SearchOrderPage() {
             <ThemedText>ไม่พบออเดอร์ที่ตรงกับเงื่อนไข</ThemedText>
           </View>
         )}
-
-        <View style={{ height: 80 }} />
       </ScrollView>
-
-      <View style={styles.confirmButton}>
-        <ThemedButton
-          title={"เริ่มการจัดส่ง"}
-          variant="primary"
-          onPress={() => router.push("/(tabs)/order/confirmOrder")}
-        />
-      </View>
     </LinearGradient>
   );
 }
@@ -153,17 +163,23 @@ export default function SearchOrderPage() {
 const styles = StyleSheet.create({
   container: { padding: 20, paddingBottom: 100 },
   searchContainer: {
-    marginTop: 20,
-    alignItems: "center",
+      
+    alignItems: "center",   
   },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
+  backBtn: { marginBottom: 10 },
   sectionTitle: { fontWeight: "600", marginBottom: 8, color: "#3FA268" },
-  confirmButton: {
-    marginTop: 20,
-    alignItems: "center",
-    marginVertical: 30,
-    position: "absolute",
-    left: 30,
-    bottom: 80,
+  filterRow: { flexDirection: "row", flexWrap: "wrap" },
+  filterBtn: {
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    marginRight: 8,
+    marginBottom: 8,
+    elevation: 1,
   },
+  filterActive: { backgroundColor: "#3FA268" },
+  filterThemedText: { color: "#3FA268", fontWeight: "500" },
+  filterThemedTextActive: { color: "#fff" },
 });

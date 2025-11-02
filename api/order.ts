@@ -4,6 +4,7 @@ import { getMenubyId, Menu } from "./store";
 import EXPO_API from "./url";
 
 export interface User {
+  user_id: string;
   username: string;
   fname: string;
   lname: string;
@@ -24,6 +25,7 @@ export interface Order {
   order_date: string;
   delivery_method: string;
   appointment_time: string;
+   drop_off_location_id: string;
   menu_quantity: menu_quantity[];
   amount: number;
   shop_name: string;
@@ -238,6 +240,55 @@ export async function confirmOrderbyRider(
   const { data } = await axios.post(`${EXPO_API}/v1/order/confirm`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return data;
+}
+
+//Som
+export async function getUser(): Promise<User> {
+  const token = await SecureStore.getItem("token");
+  const { data } = await axios.get(`${EXPO_API}/v1/user/`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return data; // data คือ user object เดียว
+}
+
+export interface Canteen {
+  CanteenName: string;
+  Latitude: string;
+  Longitude: string;
+}
+
+export interface DropOff {
+  dropoff_id: string;
+  name: string;
+  detail: string;
+  image_url: string;
+  latitude: string;
+  longitude: string;
+}
+
+export async function getCanteens(): Promise<Canteen[]> {
+  const token = await SecureStore.getItem("token");
+  const { data } = await axios.get(`${EXPO_API}/v1/canteens`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return data.canteens;
+}
+
+export async function getDropoffs(): Promise<DropOff[]> {
+  const token = await SecureStore.getItem("token");
+  const { data } = await axios.get(`${EXPO_API}/v1/dropOff/`, {
+    headers: {
+      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
   });
