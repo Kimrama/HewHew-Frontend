@@ -38,8 +38,7 @@ export interface Menu {
   price: number;
   status: string;
   image_url: string | null;
-  tag1_id: string;
-  tag2_id: string;
+  tags: string[];
 }
 
 export async function getStore(): Promise<Stores[]> {

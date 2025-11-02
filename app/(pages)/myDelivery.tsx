@@ -41,7 +41,7 @@ export default function MyDelivery() {
 
           ListEmptyComponent={
             !loading ? (
-              <View style={{ flex: 1, justifyContent: "center", alignItems: "center", marginTop: 100 }}>
+              <View style={{ flex: 1, justifyContent: "center", alignItems: "center", marginTop: 40 }}>
                 <ThemedText style={{ fontSize: 16,}}>
                   ยังไม่มีรายการจัดส่งในขณะนี้
                 </ThemedText>
