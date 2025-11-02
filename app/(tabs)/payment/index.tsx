@@ -1,59 +1,250 @@
-import { useRouter } from "expo-router"; // ✅ ใช้สำหรับ navigation
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { getUser } from "@/api/order";
+import { getWalletBalance, topUpWallet } from "@/api/wallet"; // เรียกใช้ API ที่มีอยู่
+import { ThemedText } from "@/components/ThemedText";
+import { Colors } from "@/constants/Colors";
+import { AuthContext } from "@/store/auth-context";
+import { MaterialIcons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
+import React, { useContext, useEffect, useState } from "react";
+import { Alert, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
-export default function Index() {
-  const insets = useSafeAreaInsets();
-  const router = useRouter(); // ✅ ใช้ router เพื่อเปลี่ยนหน้า
+const TopUpScreen = () => {
+  const router = useRouter();
+  const { token } = useContext(AuthContext);
+  const [amount, setAmount] = useState<string>(""); // ใช้ string เพราะต้องรับค่าจาก TextInput
+  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState<any>(null); // สำหรับเก็บข้อมูลผู้ใช้
+  const [walletBalance, setWalletBalance] = useState<number>(0); // สำหรับเก็บยอดเงินในกระเป๋า
+
+  // ดึงข้อมูลผู้ใช้และยอดเงิน
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const balance = await getWalletBalance(); // ดึงยอดเงินจาก API
+        setWalletBalance(balance);
+        // ดึงข้อมูลผู้ใช้ (ถ้ามี API สำหรับดึงข้อมูลผู้ใช้โดยตรงสามารถใช้ได้)
+        const userData = await getUser(); // สมมติว่า getUser() ดึงข้อมูลผู้ใช้
+        setUser(userData);
+      } catch (error) {
+        console.error("Failed to fetch user data:", error);
+      }
+    };
+
+    fetchUserData();
+  }, []); // ใช้ useEffect สำหรับดึงข้อมูลผู้ใช้และยอดเงินเมื่อหน้าโหลด
+
+  const handleTopUp = async () => {
+    const parsedAmount = parseFloat(amount); // แปลงค่าจำนวนเงินเป็นตัวเลขทศนิยม
+
+    if (!parsedAmount || parsedAmount < 10) {
+      Alert.alert("ผิดพลาด", "กรุณากรอกจำนวนเงินขั้นต่ำ 10 บาท");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await topUpWallet(parsedAmount); // เรียก API เติมเงิน
+      Alert.alert("สำเร็จ", response); // แสดงข้อความจาก API
+      // เรียก getWalletBalance เพื่อดึงข้อมูลยอดเงินใหม่หลังจากเติมเงินเสร็จ
+      const newBalance = await getWalletBalance();
+      setWalletBalance(newBalance); // อัปเดตยอดเงินใหม่
+      router.back(); // กลับไปหน้าโปรไฟล์
+    } catch (err) {
+      Alert.alert("เกิดข้อผิดพลาด", "ไม่สามารถเติมเงินได้");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <View style={[styles.container, { paddingBottom: 60 + insets.bottom }]}>
-      <Text style={styles.title}>Payment</Text>
+    <LinearGradient
+      colors={Colors.bg}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      style={{ flex: 1 }}
+    >
+      <View style={styles.container}>
+        {/* Header */}
+        
+        {/* แสดงชื่อผู้ใช้และยอดเงิน */}
+        <View style={styles.userInfo}>
+          <ThemedText style={styles.username}>{user?.username}</ThemedText>
+          <ThemedText style={styles.walletInfo}>
+            ฿{walletBalance} {/* แสดงยอดเงินล่าสุด */}
+          </ThemedText>
+        </View>
 
-      {/* ปุ่มไปหน้า chooseTime */}
-      <Pressable
-        style={styles.button}
-        onPress={() => router.push("/(pages)/selectPickupTime")} // ✅ กดแล้วไปหน้า chooseTime
-      >
-        <Text style={styles.buttonText}>เลือกเวลา</Text>
-      </Pressable>
-      <Pressable
-        style={styles.button}
-        onPress={() => router.push("/(pages)/notifications")} // ✅ กดแล้วไปหน้า chooseTime
-      >
-        <Text style={styles.buttonText}>noti</Text>
-      </Pressable>
-      
-      <Pressable
-        style={styles.button}
-        onPress={() => router.push("/(pages)/searchOrder")} // ✅ กดแล้วไปหน้า chooseTime
-      >
-        <Text style={styles.buttonText}>sea</Text>
-      </Pressable>
-    </View>
+        {/* ช่องทางชำระเงิน */}
+        <View style={styles.paymentMethod}>
+          <ThemedText style={styles.paymentLabel}>ช่องทางการเติมเงิน</ThemedText>
+          <View style={styles.paymentOption}>
+            <MaterialIcons name="credit-card" size={24} color={Colors.primary} />
+            <ThemedText style={styles.paymentText}>แอป K PLUS</ThemedText>
+          </View>
+        </View>
+
+        {/* การกรอกจำนวนเงิน */}
+        <View style={styles.box}>
+          <ThemedText style={styles.label}>จำนวนเงิน (บาท)</ThemedText>
+          <TextInput
+            style={styles.input}
+            placeholder="ระบุจำนวนเงิน"
+            keyboardType="numeric"
+            value={amount}
+            onChangeText={(text) => setAmount(text)} // เก็บค่าจำนวนเงินที่กรอก
+          />
+
+          {/* ปุ่มลัด */}
+          <View style={styles.quickRow}>
+            {[200, 500, 1000, 2000].map((value) => (
+              <Pressable
+                key={value}
+                style={[
+                  styles.quickButton,
+                  parseFloat(amount) === value && styles.quickButtonActive,
+                ]}
+                onPress={() => setAmount(value.toString())} // เปลี่ยนเป็น string เพื่อใช้งานกับ TextInput
+              >
+                <Text
+                  style={[
+                    styles.quickText,
+                    parseFloat(amount) === value && styles.quickTextActive,
+                  ]}
+                >
+                  {value}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+
+          {/* ปุ่มเติมเงิน */}
+          <Pressable
+            style={[styles.submitButton, loading && { opacity: 0.6 }]}
+            onPress={handleTopUp}
+            disabled={loading}
+          >
+            <Text style={styles.submitText}>
+              {loading ? "กำลังดำเนินการ..." : `เติมเงิน ${amount || 0} บาท`}
+            </Text>
+          </Pressable>
+        </View>
+      </View>
+    </LinearGradient>
   );
-}
+};
+
+export default TopUpScreen;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
     alignItems: "center",
+    paddingTop: 60,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "85%",
     marginBottom: 20,
   },
-  button: {
-    backgroundColor: "#007AFF",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
+  title: {
+    fontSize: 22,
     fontWeight: "bold",
+    marginLeft: 10,
+  },
+  userInfo: {
+    width: "85%",
+    marginBottom: 20,
+    paddingHorizontal: 16,
+    alignItems: "flex-start",
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 20,
+    elevation: 2,
+  },
+  username: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: Colors.primary,
+  },
+  walletInfo: {
+    fontSize: 16,
+    color: "#555",
+    marginTop: 4,
+  },
+  paymentMethod: {
+    width: "85%",
+    marginBottom: 20,
+    paddingHorizontal: 16,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 10,
+    elevation: 3,
+  },
+  paymentLabel: {
+    fontSize: 16,
+    marginBottom: 8,
+  },
+  paymentOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 8,
+  },
+  paymentText: {
+    fontSize: 16,
+    marginLeft: 10,
+  },
+  box: {
+    width: "85%",
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 20,
+    elevation: 2,
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 8,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 10,
+    padding: 10,
+    fontSize: 16,
+    marginBottom: 16,
+  },
+  quickRow: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginBottom: 20,
+  },
+  quickButton: {
+    borderWidth: 1,
+    borderColor: "#aaa",
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  quickButtonActive: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  quickText: {
+    color: "#000",
+  },
+  quickTextActive: {
+    color: "#fff",
+  },
+  submitButton: {
+    backgroundColor: Colors.primary,
+    paddingVertical: 12,
+    borderRadius: 25,
+    alignItems: "center",
+  },
+  submitText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
   },
 });

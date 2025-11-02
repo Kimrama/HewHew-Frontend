@@ -54,7 +54,7 @@ export default function CartPage() {
 
   const handleCheckout = () => {
     // Navigate to checkout or order confirmation page
-    console.log("Checkout");
+    router.push("/(pages)/pingDropOffLocation");
   };
 
   if (items.length === 0) {
