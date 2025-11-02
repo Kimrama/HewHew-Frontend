@@ -1,3 +1,9 @@
+import { getUser } from "@/api/order";
+import {
+  getReceivedReviews,
+  getWrittenReviews,
+  mapReviewWithUsers,
+} from "@/api/review";
 import { OtherReviewCard } from "@/components/OtherReviewCard";
 import { RatingBreakdown } from "@/components/RatingBreakdown";
 import { RatingStars } from "@/components/RatingStars";
@@ -7,15 +13,8 @@ import SortTabs from "@/components/SortTabs";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useState, useEffect } from "react";
-import { FlatList, StyleSheet, View, ActivityIndicator } from "react-native";
-import {
-  getAverageRating,
-  getReceivedReviews,
-  getWrittenReviews,
-  mapReviewWithUsers,
-} from "@/api/review";
-import { getUser } from "@/api/order";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, FlatList, StyleSheet, View } from "react-native";
 
 interface Review {
   id: string;
@@ -24,81 +23,66 @@ interface Review {
   rating: number;
   comment: string;
   otherUser: string;
-  otherUserId: string; 
+  otherUserId: string;
   otherUserAvatarUrl?: string;
   date: string;
+  user_reviewer_id: string;
 }
 
 export default function RatingScreen() {
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [userProfile, setUserProfile] = useState<any>(null);
-  const [averageRating, setAverageRating] = useState<number | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);  // รายการรีวิวทั้งหมด
+  const [userProfile, setUserProfile] = useState<any>(null); // ข้อมูลผู้ใช้
+  const [averageRating, setAverageRating] = useState<number>(0); // ค่าเฉลี่ยรีวิว
+  const [loading, setLoading] = useState<boolean>(true); // สถานะการโหลดข้อมูล
 
-  const [selectedTab, setSelectedTab] = useState<
-    "yourReviews" | "receivedReviews"
-  >("yourReviews");
+  const [selectedTab, setSelectedTab] = useState<"yourReviews" | "receivedReviews">("yourReviews");
+  const [sortOption, setSortOption] = useState<"latest" | "oldest" | "highest" | "lowest">("latest");
 
-  const [sortOption, setSortOption] = useState<
-    "latest" | "oldest" | "highest" | "lowest"
-  >("latest");
+  const handleEdit = (id: string) => console.log("Edit review", id);
+  const handleRemove = (id: string) => setReviews((current) => current.filter((r) => r.id !== id));
 
-  const handleEdit = (id: string) => {
-    console.log("Edit review", id);
-  };
-
-  const handleRemove = (id: string) => {
-    console.log("Remove review", id);
-    setReviews((current) => current.filter((r) => r.id !== id));
-  };
-
-  // ✅ โหลดข้อมูลจาก API
+  // ✅ โหลดข้อมูลจาก API พร้อมกัน
   useEffect(() => {
     const fetchReviews = async () => {
+      setLoading(true);
       try {
-        setLoading(true);
-        setError(null);
-
-        // ดึงข้อมูล user ปัจจุบัน
         const userData = await getUser();
         setUserProfile(userData);
 
-        // โหลดรีวิวตาม tab ที่เลือก
-        const rawReviews =
-          selectedTab === "yourReviews"
-            ? await getWrittenReviews()
-            : await getReceivedReviews();
+        // เรียกดึงรีวิวที่เราเขียน และที่เราได้รับในครั้งเดียว
+        const rawWrittenReviews = await getWrittenReviews();
+        const rawReceivedReviews = await getReceivedReviews();
 
-        // แปลงข้อมูลให้พร้อมแสดงผล (ดึงชื่อและรูปจาก user id)
-        const formattedReviews = await mapReviewWithUsers(rawReviews);
-        setReviews(formattedReviews);
+        // แปลงข้อมูลรีวิวที่เราเขียน และที่เราได้รับ
+        const formattedWrittenReviews = await mapReviewWithUsers(rawWrittenReviews);
+        const formattedReceivedReviews = await mapReviewWithUsers(rawReceivedReviews);
 
-        // โหลดค่าเฉลี่ย
-        const avg = await getAverageRating();
+        // คำนวณค่าเฉลี่ยจากรีวิวที่เราได้รับ
+        const avg = formattedReceivedReviews.length > 0 
+          ? formattedReceivedReviews.reduce((sum, r) => sum + r.rating, 0) / formattedReceivedReviews.length
+          : 0;
         setAverageRating(avg);
-      } catch (err: any) {
-        console.error("Error fetching reviews:", err);
-        setError("ไม่สามารถโหลดข้อมูลรีวิวได้");
+
+        // จัดการรีวิวตามแท็บที่เลือก
+        setReviews(selectedTab === "yourReviews" ? formattedWrittenReviews : formattedReceivedReviews);
+      } catch (err) {
+        console.error("Error loading reviews:", err);
+        setReviews([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchReviews();
-  }, [selectedTab]);
+  }, [selectedTab]);  // โหลดข้อมูลใหม่ทุกครั้งที่เปลี่ยน tab
 
   // ✅ ฟังก์ชันจัดเรียงรีวิว
   const sortReviews = (data: Review[]) => {
     switch (sortOption) {
       case "latest":
-        return [...data].sort(
-          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-        );
+        return [...data].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       case "oldest":
-        return [...data].sort(
-          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-        );
+        return [...data].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
       case "highest":
         return [...data].sort((a, b) => b.rating - a.rating);
       case "lowest":
@@ -110,12 +94,11 @@ export default function RatingScreen() {
 
   const sortedReviews = sortReviews(reviews);
 
+  // ✅ ตรวจสอบการโหลดข้อมูล
   if (loading) {
     return (
       <LinearGradient
         colors={Colors.bg}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
         style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
       >
         <ActivityIndicator size="large" color={Colors.primary} />
@@ -124,32 +107,14 @@ export default function RatingScreen() {
     );
   }
 
-  if (error) {
-    return (
-      <LinearGradient
-        colors={Colors.bg}
-        style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-      >
-        <ThemedText>{error}</ThemedText>
-      </LinearGradient>
-    );
-  }
-
-  const receivedReviewsOnly = reviews.filter(
-    (r) => r.otherUser === userProfile?.username
-  );
+  // ✅ ฟิลเตอร์รีวิวที่เราได้รับ
+  const receivedReviewsOnly = reviews.filter((r) => r.otherUser === userProfile?.username);
 
   return (
-    <LinearGradient
-      colors={Colors.bg}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-      style={{ flex: 1 }}
-    >
-      {/* ส่วนหัว */}
+    <LinearGradient colors={Colors.bg} style={{ flex: 1 }}>
+      {/* ส่วนหัว (โชว์ตลอดเวลา) */}
       <View style={styles.rowContainer}>
         <RatingBreakdown reviews={receivedReviewsOnly} />
-
         <View style={styles.headContainer}>
           <ThemedText style={styles.summaryText}>
             {averageRating ? averageRating.toFixed(1) : "0.0"}
@@ -162,46 +127,50 @@ export default function RatingScreen() {
         </View>
       </View>
 
-      {/* แถบเลือก tab */}
+      {/* Tabs */}
       <ReviewTabs selected={selectedTab} setSelected={setSelectedTab} />
-
-      {/* แถบเลือกการจัดเรียง */}
       <SortTabs sortOption={sortOption} setSortOption={setSortOption} />
 
       {/* รายการรีวิว */}
-      <FlatList
-        data={sortedReviews}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) =>
-          selectedTab === "yourReviews" ? (
-            <ReviewCard
-              id={item.id}
-              username={item.username}
-              rating={item.rating}
-              comment={item.comment}
-              date={item.date}
-              avatarUrl={item.avatarUrl}
-              otherUser={item.otherUser}
-              otherUserId={item.otherUserId}
-              otherUserAvatarUrl={item.otherUserAvatarUrl}
-              onEdit={handleEdit}
-              onRemove={handleRemove}
-            />
-          ) : (
-            <OtherReviewCard
-              id={item.id}
-              username={item.username}
-              rating={item.rating}
-              comment={item.comment}
-              date={item.date}
-              avatarUrl={item.avatarUrl}
-              userId={item.user_reviewer_id}
-            />
-          )
-        }
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-      />
+      {reviews.length === 0 ? (
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <ThemedText style={{ fontSize: 16, color: "#777" }}>ยังไม่มีรีวิว</ThemedText>
+        </View>
+      ) : (
+        <FlatList
+          data={sortedReviews}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) =>
+            selectedTab === "yourReviews" ? (
+              <ReviewCard
+                id={item.id}
+                username={item.username}
+                rating={item.rating}
+                comment={item.comment}
+                date={item.date}
+                avatarUrl={item.avatarUrl}
+                otherUser={item.otherUser}
+                otherUserId={item.otherUserId}
+                otherUserAvatarUrl={item.otherUserAvatarUrl}
+                onEdit={handleEdit}
+                onRemove={handleRemove}
+              />
+            ) : (
+              <OtherReviewCard
+                id={item.id}
+                username={item.username}
+                rating={item.rating}
+                comment={item.comment}
+                date={item.date}
+                avatarUrl={item.avatarUrl}
+                userId={item.user_reviewer_id}
+              />
+            )
+          }
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
     </LinearGradient>
   );
 }

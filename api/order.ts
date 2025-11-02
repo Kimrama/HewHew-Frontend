@@ -10,6 +10,7 @@ export interface User {
   lname: string;
   gender: string;
   profile_image_url: string;
+  wallet: number;
 }
 
 export interface menu_quantity {
@@ -255,6 +256,7 @@ export async function getUser(): Promise<User> {
       Authorization: `Bearer ${token}`,
     },
   });
+  console.log("User data fetched:", data);
   return data; // data คือ user object เดียว
 }
 
