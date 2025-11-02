@@ -72,7 +72,7 @@ export function MenuBlock({ name, info, price, status, imageUrl, count, onCountC
 
       <View style={{ flex: 1 }}>
         <View style={styles.infoContainer}>
-          <ThemedText style={styles.name}>{name}</ThemedText>
+          <ThemedText type='defaultSemiBold' style={{fontSize: 16}}>{name}</ThemedText>
           <ThemedText>{info}</ThemedText>
           <ThemedText style={styles.price}>฿ {price}</ThemedText>
         </View>
@@ -106,17 +106,7 @@ export function MenuBlock({ name, info, price, status, imageUrl, count, onCountC
 
       {status == 'unavailable' && (
         <View
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: 350,
-            height: 110,
-            borderRadius: 20,
-            backgroundColor: "rgba(140, 140, 140, 0.5)",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
+          style={styles.close}
         >
         </View>
       )}
@@ -185,4 +175,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: Colors.white,
   },
+  close: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: 350,
+    height: 110,
+    borderRadius: 20,
+    backgroundColor: "rgba(195, 195, 195, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  }
 });
