@@ -1,4 +1,4 @@
-import { getCanteens, getDropoffs, getOrder } from "@/api/order";
+import { getCanteens, getDropoffs, getOrder, Order, Canteen, DropOff } from "@/api/order";
 import { OrderCard } from "@/components/OrderInListCard";
 import { SearchBar } from "@/components/SearchBar";
 import { ThemedButton } from "@/components/ThemedButton";
