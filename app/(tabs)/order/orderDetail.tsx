@@ -124,6 +124,7 @@ export default function OrderDetail() {
           appointmentTime={order.appointment_time}
           riderEarn={order.shipping_fee}
           type="orderDetail"
+          confirmImage=""
         />
 
         {/* button */}
