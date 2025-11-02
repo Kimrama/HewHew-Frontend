@@ -41,10 +41,10 @@ export function OrderBlock({ name, canteen, store, appointmentTime, deliveryMeth
                 <ThemedText type="defaultSemiBold">รายการที่ {index}</ThemedText>
 
                 <View style={{ flexDirection: 'row' }}>
-                    <View style={styles.amount}>
+                    {/* <View style={styles.amount}>
                         <ThemedText>{amount}</ThemedText>
                     </View>
-                    <ThemedText style={{ paddingLeft: 10 }}>รายการ</ThemedText>
+                    <ThemedText style={{ paddingLeft: 10 }}>รายการ</ThemedText> */}
                     {onRemove && (
                         <Pressable onPress={onRemove} style={{ marginLeft: 10 }}>
                             <MaterialIcons name={"close"} size={20} color={Colors.red} />

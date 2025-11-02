@@ -1,4 +1,4 @@
-import { getStore, Stores } from "@/api/store";
+import { getStore, Stores, getPopularStore } from "@/api/store";
 import { SearchBar } from "@/components/SearchBar";
 import { StoreBlock } from "@/components/StoreBlock";
 import { ThemedText } from "@/components/ThemedText";
@@ -53,6 +53,7 @@ export default function Index() {
   const [recommendOffset, setRecommendOffset] = useState(0);
   const [forYouOffset, setForYouOffset] = useState(0);
   const [stores, setStores] = useState<Stores[]>([]);
+  const [storesPopular, setStoresPopular] = useState<Stores[]>([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -60,6 +61,20 @@ export default function Index() {
       try {
         const response = await getStore();
         setStores(response);
+        console.log("Stores:", response);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await getPopularStore();
+        setStoresPopular(response);
+        console.log("Popular Stores:", response);
       } catch (err) {
         console.error(err);
       }
@@ -201,7 +216,7 @@ export default function Index() {
           {stores && (
             <FlatList
               ref={forYouRef}
-              data={[...stores].reverse()}
+              data={storesPopular}
               renderItem={renderStore}
               keyExtractor={(_, index) => index.toString()}
               horizontal

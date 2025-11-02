@@ -58,13 +58,6 @@ export default function OrderDetail() {
   ]);
   };
 
-  const handleRemoveOrder = () => {
-    if (!order) return;
-    removeOrder(order.order_id);
-    Alert.alert("Success", "Order removed from accepted list!");
-    router.back();
-  };
-
   if (loading) {
     return (
       <View style={styles.container}>
@@ -102,12 +95,12 @@ export default function OrderDetail() {
             <ThemedText>{order.canteen_name}</ThemedText>
           </View>
 
-          <View style={styles.row}>
+          {/* <View style={styles.row}>
             <View style={styles.amount}>
               <ThemedText>{order.totalQuantity}</ThemedText>
             </View>
             <ThemedText style={{ paddingLeft: 10 }}>รายการ</ThemedText>
-          </View>
+          </View> */}
         </View>
 
         {/* order */}

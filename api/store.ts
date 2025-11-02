@@ -51,6 +51,17 @@ export async function getStore(): Promise<Stores[]> {
   return data.shops;
 }
 
+export async function getPopularStore(): Promise<Stores[]> {
+  const token = await SecureStore.getItemAsync("token");
+  const { data } = await axios.get(`${EXPO_API}/v1/shop/popular`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return data.popular_shops.shops;
+}
+
 export async function getStorebyId(storeId: string): Promise<Store> {
   const token = await SecureStore.getItemAsync("token");
   const { data } = await axios.get(`${EXPO_API}/v1/shop/${storeId}`, {

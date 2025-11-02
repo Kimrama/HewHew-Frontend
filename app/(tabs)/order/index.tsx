@@ -15,6 +15,7 @@ import {
   View,
 } from "react-native";
 import { HorizontalTags } from "@/components/HorizontalTags";
+import { Colors } from "@/constants/Colors";
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -79,7 +80,12 @@ export default function SearchOrderPage() {
   }
 
   return (
-    <LinearGradient colors={["#FAE9E8", "#FFFFFF"]} style={{ flex: 1 }}>
+    <LinearGradient
+          colors={Colors.bg}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={{ flex: 1 }}
+        >
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.container}>
         {/* 🔍 Search Bar */}
         <View style={styles.searchContainer}>
