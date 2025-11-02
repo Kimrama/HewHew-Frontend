@@ -43,7 +43,7 @@ export default function myOrder() {
           ListFooterComponent={<View style={{ marginBottom: 50 }} />}
           ListEmptyComponent={
             !loading ? (
-              <View style={{ flex: 1, alignItems: "center", justifyContent: "center", marginTop: 100 }}>
+              <View style={{ flex: 1, alignItems: "center", justifyContent: "center", marginTop: 40 }}>
                 <ThemedText style={{ fontSize: 16,}}>
                   ไม่มีคำสั่งซื้อในขณะนี้
                 </ThemedText>
