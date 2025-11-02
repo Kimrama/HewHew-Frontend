@@ -58,13 +58,6 @@ export default function OrderDetail() {
   ]);
   };
 
-  const handleRemoveOrder = () => {
-    if (!order) return;
-    removeOrder(order.order_id);
-    Alert.alert("Success", "Order removed from accepted list!");
-    router.back();
-  };
-
   if (loading) {
     return (
       <View style={styles.container}>
