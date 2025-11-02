@@ -38,7 +38,8 @@ const TopUpScreen = () => {
     const parsedAmount = parseFloat(amount); // แปลงค่าจำนวนเงินเป็นตัวเลขทศนิยม
 
     if (!parsedAmount || parsedAmount < 10) {
-      Alert.alert("ผิดพลาด", "กรุณากรอกจำนวนเงินขั้นต่ำ 10 บาท");
+      Alert.alert("Top Up Failed",
+        "Please enter a minimum amount of 10 Baht");
       return;
     }
 
@@ -51,7 +52,7 @@ const TopUpScreen = () => {
       setWalletBalance(newBalance); // อัปเดตยอดเงินใหม่
       router.back(); // กลับไปหน้าโปรไฟล์
     } catch (err) {
-      Alert.alert("เกิดข้อผิดพลาด", "ไม่สามารถเติมเงินได้");
+      Alert.alert("Error", "Unable to complete the transaction.");
     } finally {
       setLoading(false);
     }
@@ -66,7 +67,7 @@ const TopUpScreen = () => {
     >
       <View style={styles.container}>
         {/* Header */}
-        
+
         {/* แสดงชื่อผู้ใช้และยอดเงิน */}
         <View style={styles.userInfo}>
           <ThemedText style={styles.username}>{user?.username}</ThemedText>
@@ -125,7 +126,7 @@ const TopUpScreen = () => {
             disabled={loading}
           >
             <Text style={styles.submitText}>
-              {loading ? "กำลังดำเนินการ..." : `เติมเงิน ${amount || 0} บาท`}
+              {loading ? "Processing..." : `Top up ${amount || 0} THB`}
             </Text>
           </Pressable>
         </View>

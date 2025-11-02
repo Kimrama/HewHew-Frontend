@@ -107,6 +107,33 @@ export default function PagesLayout() {
           headerTitleAlign: "center",
         }}
       />
+      <Stack.Screen
+        name="otherProfile"
+        options={{
+          headerTitle: () => (
+            <ThemedText type="subtitle">Other Profile</ThemedText>
+          ),
+          headerTitleAlign: "center",
+        }}
+      />
+      <Stack.Screen
+        name="rating"
+        options={{
+          headerTitle: () => (
+            <ThemedText type="subtitle">My Rating</ThemedText>
+          ),
+          headerTitleAlign: "center",
+        }}
+      />
+      <Stack.Screen
+        name="editProfile"
+        options={{
+          headerTitle: () => (
+            <ThemedText type="subtitle">Edit My Profile</ThemedText>
+          ),
+          headerTitleAlign: "center",
+        }}
+      />
     </Stack>
   );
 }

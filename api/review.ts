@@ -145,3 +145,28 @@ export async function mapReviewWithUsers(reviews: Review[] | null | undefined) {
 }
 
 
+export const getUserReviews = async (userId: string) => {
+  try {
+    console.log("Fetching reviews for userId:", userId);
+
+    // ดึง token จาก SecureStore
+    const token = await SecureStore.getItemAsync("token");
+    if (!token) {
+      throw new Error("No token found. Please login again.");
+    }
+
+    // ส่ง token ใน header
+    const res = await axios.get(`${EXPO_API}/v1/review/user/${userId}`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    console.log("User Reviews Response:", res.data);
+    return res.data;
+  } catch (error: any) {
+    console.error("Error fetching user reviews:", error.response?.data || error.message);
+    return [];
+  }
+};

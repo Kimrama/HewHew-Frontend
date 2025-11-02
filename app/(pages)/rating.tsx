@@ -30,18 +30,19 @@ interface Review {
 }
 
 export default function RatingScreen() {
-  const [reviews, setReviews] = useState<Review[]>([]);  // รายการรีวิวทั้งหมด
-  const [userProfile, setUserProfile] = useState<any>(null); // ข้อมูลผู้ใช้
-  const [averageRating, setAverageRating] = useState<number>(0); // ค่าเฉลี่ยรีวิว
-  const [loading, setLoading] = useState<boolean>(true); // สถานะการโหลดข้อมูล
+  const [writtenReviews, setWrittenReviews] = useState<Review[]>([]);
+  const [receivedReviews, setReceivedReviews] = useState<Review[]>([]);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [averageRating, setAverageRating] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(true);
 
   const [selectedTab, setSelectedTab] = useState<"yourReviews" | "receivedReviews">("yourReviews");
   const [sortOption, setSortOption] = useState<"latest" | "oldest" | "highest" | "lowest">("latest");
 
   const handleEdit = (id: string) => console.log("Edit review", id);
-  const handleRemove = (id: string) => setReviews((current) => current.filter((r) => r.id !== id));
+  const handleRemove = (id: string) =>
+    setWrittenReviews((current) => current.filter((r) => r.id !== id));
 
-  // ✅ โหลดข้อมูลจาก API พร้อมกัน
   useEffect(() => {
     const fetchReviews = async () => {
       setLoading(true);
@@ -49,40 +50,50 @@ export default function RatingScreen() {
         const userData = await getUser();
         setUserProfile(userData);
 
-        // เรียกดึงรีวิวที่เราเขียน และที่เราได้รับในครั้งเดียว
+        // ✅ ดึงรีวิวที่เราเขียน และรีวิวที่เราได้รับ
         const rawWrittenReviews = await getWrittenReviews();
         const rawReceivedReviews = await getReceivedReviews();
 
-        // แปลงข้อมูลรีวิวที่เราเขียน และที่เราได้รับ
         const formattedWrittenReviews = await mapReviewWithUsers(rawWrittenReviews);
         const formattedReceivedReviews = await mapReviewWithUsers(rawReceivedReviews);
 
-        // คำนวณค่าเฉลี่ยจากรีวิวที่เราได้รับ
-        const avg = formattedReceivedReviews.length > 0 
-          ? formattedReceivedReviews.reduce((sum, r) => sum + r.rating, 0) / formattedReceivedReviews.length
-          : 0;
-        setAverageRating(avg);
+        setWrittenReviews(formattedWrittenReviews);
+        setReceivedReviews(formattedReceivedReviews);
 
-        // จัดการรีวิวตามแท็บที่เลือก
-        setReviews(selectedTab === "yourReviews" ? formattedWrittenReviews : formattedReceivedReviews);
+        // ✅ คำนวณค่าเฉลี่ยเฉพาะรีวิวที่เราได้รับ
+        const avg =
+          formattedReceivedReviews.length > 0
+            ? formattedReceivedReviews.reduce((sum, r) => sum + r.rating, 0) /
+              formattedReceivedReviews.length
+            : 0;
+        setAverageRating(avg);
       } catch (err) {
         console.error("Error loading reviews:", err);
-        setReviews([]);
+        setWrittenReviews([]);
+        setReceivedReviews([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchReviews();
-  }, [selectedTab]);  // โหลดข้อมูลใหม่ทุกครั้งที่เปลี่ยน tab
+  }, []);
 
-  // ✅ ฟังก์ชันจัดเรียงรีวิว
+  // เลือกรีวิวตามแท็บ
+  const activeReviews =
+    selectedTab === "yourReviews" ? writtenReviews : receivedReviews;
+
+  // ฟังก์ชันจัดเรียง
   const sortReviews = (data: Review[]) => {
     switch (sortOption) {
       case "latest":
-        return [...data].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        return [...data].sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
       case "oldest":
-        return [...data].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        return [...data].sort(
+          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
       case "highest":
         return [...data].sort((a, b) => b.rating - a.rating);
       case "lowest":
@@ -92,9 +103,8 @@ export default function RatingScreen() {
     }
   };
 
-  const sortedReviews = sortReviews(reviews);
+  const sortedReviews = sortReviews(activeReviews);
 
-  // ✅ ตรวจสอบการโหลดข้อมูล
   if (loading) {
     return (
       <LinearGradient
@@ -107,22 +117,19 @@ export default function RatingScreen() {
     );
   }
 
-  // ✅ ฟิลเตอร์รีวิวที่เราได้รับ
-  const receivedReviewsOnly = reviews.filter((r) => r.otherUser === userProfile?.username);
-
   return (
     <LinearGradient colors={Colors.bg} style={{ flex: 1 }}>
-      {/* ส่วนหัว (โชว์ตลอดเวลา) */}
+      {/* ✅ ส่วนหัว แสดงเฉพาะรีวิวที่เราได้รับ */}
       <View style={styles.rowContainer}>
-        <RatingBreakdown reviews={receivedReviewsOnly} />
+        <RatingBreakdown reviews={receivedReviews} />
         <View style={styles.headContainer}>
           <ThemedText style={styles.summaryText}>
             {averageRating ? averageRating.toFixed(1) : "0.0"}
-            <ThemedText style={{ color: "#ccc" }}>/5</ThemedText>
+            <ThemedText style={{ color: "#7f7272ff" }}>/5</ThemedText>
           </ThemedText>
           <RatingStars rating={averageRating ?? 0} size={16} />
           <ThemedText style={styles.summaryText}>
-            {`${receivedReviewsOnly.length} Ratings`}
+            {`${receivedReviews.length} Ratings`}
           </ThemedText>
         </View>
       </View>
@@ -131,8 +138,8 @@ export default function RatingScreen() {
       <ReviewTabs selected={selectedTab} setSelected={setSelectedTab} />
       <SortTabs sortOption={sortOption} setSortOption={setSortOption} />
 
-      {/* รายการรีวิว */}
-      {reviews.length === 0 ? (
+      {/* รีวิว */}
+      {sortedReviews.length === 0 ? (
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
           <ThemedText style={{ fontSize: 16, color: "#777" }}>ยังไม่มีรีวิว</ThemedText>
         </View>
