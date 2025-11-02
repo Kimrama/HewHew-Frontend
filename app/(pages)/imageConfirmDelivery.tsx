@@ -22,6 +22,7 @@ export default function ImageConfirmDelivery() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const { id } = useLocalSearchParams();
+  const idStr = Array.isArray(id) ? id[0] : id ?? "";
 
   const pickImage = async () => {
     const permissionResult =
@@ -105,7 +106,7 @@ export default function ImageConfirmDelivery() {
           {
             text: "OK",
             onPress: () => {
-            confirmOrderbyRider(id, selectedImage ?? '')
+            confirmOrderbyRider(idStr, selectedImage ?? '')
               .then(() => {
                 router.push("/(pages)/myDelivery");
               })

@@ -117,6 +117,7 @@ export default function MenuPage() {
     return menus
       .filter((item) => (menuCounts[item.name] ?? 0) > 0)
       .map((item) => ({
+        id: item.menu_id,
         name: item.name,
         info: item.detail,
         price: item.price,
@@ -141,20 +142,54 @@ export default function MenuPage() {
     >
       {/* <SafeAreaView style={{ flex: 1 }}> */}
         <View style={styles.headerImg}>
-          <Image source={imageSource}
-            style={styles.storeImg}
-          />
-          <View style={styles.Overlay}></View>
-          <ThemedText type="titleMd" style={styles.headerName}>
-            {stores?.name}
-          </ThemedText>
-          <MaterialIcons
-            name="location-pin"
-            size={25}
-            style={styles.headerIcon}
-          />
-          <ThemedText style={styles.headerCanteen}>{stores?.canteen_name}</ThemedText>
+          {stores?.state === false ? (
+            <>
+              <View style={{flexDirection: "row"}}>
+                <MaterialIcons name='store' size={24}></MaterialIcons>
+                <ThemedText type='subtitle'>ปิดให้บริการในขณะนี้</ThemedText>
+              </View>
+              <Image source={imageSource} style={styles.storeImg} />
+              <View style={styles.Overlay} />
+
+              <ThemedText type="titleMd" style={styles.headerName}>
+                {stores?.name}
+              </ThemedText>
+
+              <MaterialIcons
+                name="location-pin"
+                size={25}
+                style={styles.headerIcon}
+              />
+
+              <ThemedText style={styles.headerCanteen}>
+                {stores?.canteen_name}
+              </ThemedText>
+
+              <View style={styles.headerOverlay}>
+              </View>
+            </>
+          ) : (
+            <>
+              <Image source={imageSource} style={styles.storeImg} />
+              <View style={styles.Overlay} />
+
+              <ThemedText type="titleMd" style={styles.headerName}>
+                {stores?.name}
+              </ThemedText>
+
+              <MaterialIcons
+                name="location-pin"
+                size={25}
+                style={styles.headerIcon}
+              />
+
+              <ThemedText style={styles.headerCanteen}>
+                {stores?.canteen_name}
+              </ThemedText>
+            </>
+          )}
         </View>
+
 
         {/* search bar + tag */}
         <View style={{ paddingVertical: 20, alignItems: "center" }}>
@@ -183,7 +218,11 @@ export default function MenuPage() {
               info={item.detail}
               price={item.price}
               imageUrl={item.image_url || ''}
-              status={item.status}
+              status={
+                item.status === 'unavailable' || stores?.state === false
+                  ? 'unavailable'
+                  : item.status
+              }
               count={menuCounts[item.name] || 0}
               onCountChange={handleCountChange}
             />
@@ -208,6 +247,15 @@ const styles = StyleSheet.create({
     height: 100,
     width: width,
     position: "relative",
+  },
+  headerOverlay: {
+    height: 100,
+    width: width,
+    position: "absolute",
+    top: 0,
+    left: 0,
+    backgroundColor: "rgba(195, 195, 195, 0.5)",
+    zIndex: 10,
   },
   storeImg: {
     height: "100%",
