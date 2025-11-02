@@ -141,54 +141,57 @@ export default function MenuPage() {
       style={{ flex: 1 }}
     >
       {/* <SafeAreaView style={{ flex: 1 }}> */}
-        <View style={styles.headerImg}>
           {stores?.state === false ? (
             <>
-              <View style={{flexDirection: "row"}}>
-                <MaterialIcons name='store' size={24}></MaterialIcons>
-                <ThemedText type='subtitle'>ปิดให้บริการในขณะนี้</ThemedText>
+              <View style={styles.closedBanner}>
+                <MaterialIcons name='store' size={24} style={{color: Colors.white}}></MaterialIcons>
+                <ThemedText type='subtitle' style={{color: Colors.white}}>ปิดให้บริการในขณะนี้</ThemedText>
               </View>
-              <Image source={imageSource} style={styles.storeImg} />
-              <View style={styles.Overlay} />
 
-              <ThemedText type="titleMd" style={styles.headerName}>
-                {stores?.name}
-              </ThemedText>
+              <View style={styles.headerImg}>
+                <Image source={imageSource} style={styles.storeImg} />
+                <View style={styles.Overlay} />
 
-              <MaterialIcons
-                name="location-pin"
-                size={25}
-                style={styles.headerIcon}
-              />
+                <ThemedText type="titleMd" style={styles.headerName}>
+                  {stores?.name}
+                </ThemedText>
 
-              <ThemedText style={styles.headerCanteen}>
-                {stores?.canteen_name}
-              </ThemedText>
+                <MaterialIcons
+                  name="location-pin"
+                  size={25}
+                  style={styles.headerIcon}
+                />
 
-              <View style={styles.headerOverlay}>
+                <ThemedText style={styles.headerCanteen}>
+                  {stores?.canteen_name}
+                </ThemedText>
+
+                <View style={styles.headerOverlay}></View>
               </View>
             </>
           ) : (
             <>
-              <Image source={imageSource} style={styles.storeImg} />
-              <View style={styles.Overlay} />
+              <View style={styles.headerImg}>
+                <Image source={imageSource} style={styles.storeImg} />
+                <View style={styles.Overlay} />
 
-              <ThemedText type="titleMd" style={styles.headerName}>
-                {stores?.name}
-              </ThemedText>
+                <ThemedText type="titleMd" style={styles.headerName}>
+                  {stores?.name}
+                </ThemedText>
 
-              <MaterialIcons
-                name="location-pin"
-                size={25}
-                style={styles.headerIcon}
-              />
+                <MaterialIcons
+                  name="location-pin"
+                  size={25}
+                  style={styles.headerIcon}
+                />
 
-              <ThemedText style={styles.headerCanteen}>
-                {stores?.canteen_name}
-              </ThemedText>
+                <ThemedText style={styles.headerCanteen}>
+                  {stores?.canteen_name}
+                </ThemedText>
+              </View>
             </>
           )}
-        </View>
+       
 
 
         {/* search bar + tag */}
@@ -211,7 +214,11 @@ export default function MenuPage() {
           data={filteredMenu}
           keyExtractor={(item, idx) => `${item.name}-${idx}`}
           contentContainerStyle={{ alignItems: "center" }}
-          ListFooterComponent={<View style={{ marginBottom: 120 }}></View>}
+          ListFooterComponent={
+            stores?.state === false ? null : (
+              <View style={{ marginBottom: 120 }} />
+            )
+          }
           renderItem={({ item }) => (
             <MenuBlock
               name={item.name}
@@ -229,14 +236,16 @@ export default function MenuPage() {
           )}
         />
 
-        <View style={styles.button}>
-          <ThemedButton
-            title={`${totalItems} รายการ`}
-            title2={`${totalPrice} ฿`}
-            variant="primary"
-            onPress={clickButton}
-          />
-        </View>
+        {stores?.state === false ? (null) : (
+          <View style={styles.button}>
+            <ThemedButton
+              title={`${totalItems} รายการ`}
+              title2={`${totalPrice} ฿`}
+              variant="primary"
+              onPress={clickButton}
+            />
+          </View>
+        )}
       {/* </SafeAreaView> */}
     </LinearGradient>
   );
@@ -294,4 +303,15 @@ const styles = StyleSheet.create({
     left: 30,
     bottom: 30,
   },
+  closedBanner: {
+    flexDirection: "row",
+    gap: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 10,
+    backgroundColor: Colors.red,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    height: 45,
+  }
 });
