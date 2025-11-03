@@ -1,4 +1,4 @@
-import { DropOff, getOrderbyId, Order, User } from "@/api/order";
+import { DropOff, getOrderbyId, Order, User, getUser } from "@/api/order";
 import { OrderBlock } from "@/components/OrderBlock";
 import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedText } from "@/components/ThemedText";
@@ -17,14 +17,17 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 
 export default function OrderDetail() {
   const { orderId } = useLocalSearchParams<{ orderId: string }>();
-  const [order, setOrder] = useState<(Order & { User?: User; menus: { name: string; detail: string; price: number; quantity: number }[]; totalQuantity: number; dropOffLocation?: DropOff;})>();
+  const [order, setOrder] = useState<(Order & { User?: User; menus: { name: string; detail: string; price: number; quantity: number }[]; totalQuantity: number; dropOffLocation?: DropOff; })>();
   const [loading, setLoading] = useState(true);
-  const { acceptOrder, removeOrder, isOrderAccepted } = useOrderContext();
+  const { acceptedOrders, acceptOrder, removeOrder, isOrderAccepted } = useOrderContext();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+
+  const [availableOrder, setAvailableOrder] = useState<number>(0);
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -33,8 +36,11 @@ export default function OrderDetail() {
       setLoading(true);
       try {
         const orderData = await getOrderbyId(orderId);
+        const userRes = await getUser();
         setOrder(orderData);
         console.log(order);
+        setAvailableOrder(userRes.available_order ?? 0);
+
       } catch (error) {
         console.log("Error fetching order:", error);
       } finally {
@@ -46,16 +52,26 @@ export default function OrderDetail() {
   }, [orderId]);
 
   const handleAcceptOrder = () => {
+    if (acceptedOrders.length >= availableOrder) {
+      Alert.alert(
+        "Limit Reached",
+        "You cannot accept more orders at this time.",
+        [{ text: "OK" }]
+      );
+      return;
+    }
+
+
     if (!order) return;
     acceptOrder(order);
     Alert.alert("Success", "Order accepted successfully!", [
-    {
-      text: "OK",
-      onPress: () => {
-        router.push("/(tabs)/order");
+      {
+        text: "OK",
+        onPress: () => {
+          router.push("/(tabs)/order");
+        },
       },
-    },
-  ]);
+    ]);
   };
 
   if (loading) {
@@ -75,6 +91,7 @@ export default function OrderDetail() {
   }
 
   const isAccepted = isOrderAccepted(order.order_id);
+  const isButtonDisabled = acceptedOrders.length >= availableOrder;
 
   return (
     <LinearGradient
@@ -121,12 +138,20 @@ export default function OrderDetail() {
         />
 
         {/* button */}
-        <View style={{paddingTop: 20}}>
-            <ThemedButton
-              title="เพิ่มรายการคำสั่งซื้อ"
-              variant="primary"
-              onPress={handleAcceptOrder}
-            />
+        <View style={{ paddingTop: 20 }}>
+          <ThemedButton
+            title={isButtonDisabled ? "ไม่สามารถเพิ่มคำสั่งซื้อได้" : "เพิ่มรายการคำสั่งซื้อ"}
+            variant="primary"
+            onPress={handleAcceptOrder}
+            // disabled={isButtonDisabled}
+            style={[
+              
+              isButtonDisabled && {
+                backgroundColor: Colors.disabled,  // This should be the color you want when disabled (make sure this color exists in your Colors file)
+                opacity: 0.6,  // Reduce opacity for disabled state
+              },
+            ]}
+          />
         </View>
       </SafeAreaView>
     </LinearGradient>
@@ -248,9 +273,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
   },
   button: {
-    marginVertical: 30,
-    position: "absolute",
-    left: 30,
-    bottom: 30,
+    
   },
 });
