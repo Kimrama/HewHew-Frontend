@@ -119,9 +119,7 @@ export default function PagesLayout() {
       <Stack.Screen
         name="rating"
         options={{
-          headerTitle: () => (
-            <ThemedText type="subtitle">My Rating</ThemedText>
-          ),
+          headerTitle: () => <ThemedText type="subtitle">My Rating</ThemedText>,
           headerTitleAlign: "center",
         }}
       />
@@ -130,6 +128,15 @@ export default function PagesLayout() {
         options={{
           headerTitle: () => (
             <ThemedText type="subtitle">Edit My Profile</ThemedText>
+          ),
+          headerTitleAlign: "center",
+        }}
+      />
+      <Stack.Screen
+        name="review"
+        options={{
+          headerTitle: () => (
+            <ThemedText type="subtitle">Write Review</ThemedText>
           ),
           headerTitleAlign: "center",
         }}
