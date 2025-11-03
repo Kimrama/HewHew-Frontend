@@ -4,7 +4,8 @@ import {
   getCanteens,
   getDropoffs,
   getOrder,
-  Order,getUser
+  getUser,
+  Order,
 } from "@/api/order";
 import { HorizontalTags } from "@/components/HorizontalTags";
 import { OrderCard } from "@/components/OrderInListCard";
@@ -13,6 +14,7 @@ import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
 import { useOrderContext } from "@/store/order-context";
+import { MaterialIcons } from "@expo/vector-icons"; // นำเข้า Material Icons
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -21,12 +23,10 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
+  TouchableOpacity,
   UIManager,
-  View, TouchableOpacity
+  View,
 } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons"; // นำเข้า Material Icons
-
-
 
 if (
   Platform.OS === "android" &&
@@ -57,15 +57,16 @@ export default function SearchOrderPage() {
     const fetchAll = async () => {
       setLoading(true);
       try {
-        const [orderRes, canteenRes, dropoffRes,userRes] = await Promise.all([
+        const [orderRes, canteenRes, dropoffRes, userRes] = await Promise.all([
           getOrder(),
           getCanteens(),
-          getDropoffs(),getUser(),
+          getDropoffs(),
+          getUser(),
         ]);
         setOrders(orderRes);
         setCanteens(canteenRes);
         setDropoffs(dropoffRes);
-        setAvailableOrder(userRes.available_order);
+        setAvailableOrder(userRes.available_order ?? 0);
       } catch (err) {
         console.error(err);
       } finally {
@@ -102,14 +103,11 @@ export default function SearchOrderPage() {
     );
   }
 
-  
-
   const handleClose = () => {
     setVisible(false);
   };
 
   const isAcceptedGreaterThanAvailable = acceptedOrders.length > availableOrder;
-
 
   return (
     <LinearGradient
@@ -184,7 +182,7 @@ export default function SearchOrderPage() {
         <View style={{ height: 80 }} />
       </ScrollView>
 
-       {visible && (
+      {visible && (
         <View style={styles.iconcontainer}>
           <View style={styles.circle}>
             <MaterialIcons name="delivery-dining" size={40} color="white" />
@@ -196,15 +194,13 @@ export default function SearchOrderPage() {
             <ThemedText
               style={[
                 styles.number,
-                isAcceptedGreaterThanAvailable ? { color: "red" } : {}
+                isAcceptedGreaterThanAvailable ? { color: "red" } : {},
               ]}
             >
               {acceptedOrders.length} / {availableOrder}
             </ThemedText>
           </View>
-
         </View>
-        
       )}
 
       {acceptedOrders.length > 0 && (
@@ -238,26 +234,26 @@ const styles = StyleSheet.create({
   },
   iconcontainer: {
     position: "absolute",
-    bottom: 250, 
+    bottom: 250,
     right: 20,
     alignItems: "center",
     justifyContent: "center",
     zIndex: 10,
   },
   circle: {
-    backgroundColor: "#7EC850", 
+    backgroundColor: "#7EC850",
     width: 60,
     height: 60,
-    borderRadius: 30, 
+    borderRadius: 30,
     alignItems: "center",
     justifyContent: "center",
-    position: "relative", 
+    position: "relative",
   },
   closeButton: {
     position: "absolute",
     top: -10,
     right: -10,
-    backgroundColor: "#2720204e", 
+    backgroundColor: "#2720204e",
     borderRadius: 20,
     width: 20,
     height: 20,
@@ -269,7 +265,7 @@ const styles = StyleSheet.create({
     color: "white",
   },
   numberContainer: {
-    backgroundColor: "#7EC850", 
+    backgroundColor: "#7EC850",
     paddingVertical: 5,
     paddingHorizontal: 20,
     borderRadius: 20,
