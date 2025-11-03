@@ -9,13 +9,11 @@ import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
-  FlatList,
   Pressable,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
-  View,
+  View
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -91,6 +89,7 @@ export default function ConfirmOrder() {
                 console.log(o.order_id)
                 await acceptOrderbyRider(o.order_id);
               }
+              acceptedOrders.forEach((order) => removeOrder(order.order_id));
               Alert.alert("Success", "Delivery started successfully!");
               router.push("/(pages)/myDelivery");
             } catch (error) {
