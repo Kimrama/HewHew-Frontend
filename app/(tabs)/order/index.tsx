@@ -1,8 +1,20 @@
-import { getCanteens, getDropoffs, getOrder, Order, Canteen, DropOff } from "@/api/order";
+import {
+  Canteen,
+  DropOff,
+  getCanteens,
+  getDropoffs,
+  getOrder,
+  getUser,
+  Order,
+} from "@/api/order";
+import { HorizontalTags } from "@/components/HorizontalTags";
 import { OrderCard } from "@/components/OrderInListCard";
 import { SearchBar } from "@/components/SearchBar";
 import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedText } from "@/components/ThemedText";
+import { Colors } from "@/constants/Colors";
+import { useOrderContext } from "@/store/order-context";
+import { MaterialIcons } from "@expo/vector-icons"; // นำเข้า Material Icons
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -11,13 +23,15 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
+  TouchableOpacity,
   UIManager,
   View,
 } from "react-native";
-import { HorizontalTags } from "@/components/HorizontalTags";
-import { Colors } from "@/constants/Colors";
 
-if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
+if (
+  Platform.OS === "android" &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
@@ -35,18 +49,24 @@ export default function SearchOrderPage() {
 
   const [loading, setLoading] = useState(true);
 
+  const { acceptedOrders } = useOrderContext();
+  const [availableOrder, setAvailableOrder] = useState<number>(0);
+  const [visible, setVisible] = useState(true);
+
   useEffect(() => {
     const fetchAll = async () => {
       setLoading(true);
       try {
-        const [orderRes, canteenRes, dropoffRes] = await Promise.all([
+        const [orderRes, canteenRes, dropoffRes, userRes] = await Promise.all([
           getOrder(),
           getCanteens(),
           getDropoffs(),
+          getUser(),
         ]);
         setOrders(orderRes);
         setCanteens(canteenRes);
         setDropoffs(dropoffRes);
+        setAvailableOrder(userRes.available_order ?? 0);
       } catch (err) {
         console.error(err);
       } finally {
@@ -66,8 +86,12 @@ export default function SearchOrderPage() {
     const matchSearch =
       order.shop_name.toLowerCase().includes(searchText.toLowerCase()) ||
       order.canteen_name.toLowerCase().includes(searchText.toLowerCase());
-    const matchCanteen = selectedCanteen ? order.canteen_name === selectedCanteen : true;
-    const matchDropoff = selectedDropoff ? order.drop_off_location_id === selectedDropoff : true;
+    const matchCanteen = selectedCanteen
+      ? order.canteen_name === selectedCanteen
+      : true;
+    const matchDropoff = selectedDropoff
+      ? order.drop_off_location_id === selectedDropoff
+      : true;
     return matchSearch && matchCanteen && matchDropoff;
   });
 
@@ -79,14 +103,23 @@ export default function SearchOrderPage() {
     );
   }
 
+  const handleClose = () => {
+    setVisible(false);
+  };
+
+  const isAcceptedGreaterThanAvailable = acceptedOrders.length > availableOrder;
+
   return (
     <LinearGradient
-          colors={Colors.bg}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 1 }}
-          style={{ flex: 1 }}
-        >
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.container}>
+      colors={Colors.bg}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      style={{ flex: 1 }}
+    >
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.container}
+      >
         {/* 🔍 Search Bar */}
         <View style={styles.searchContainer}>
           <SearchBar
@@ -108,7 +141,9 @@ export default function SearchOrderPage() {
         />
 
         {/* 📍 จุดส่งอาหาร */}
-        <ThemedText style={[styles.sectionTitle, { marginTop: 10 }]}>จุดส่งอาหาร</ThemedText>
+        <ThemedText style={[styles.sectionTitle, { marginTop: 10 }]}>
+          จุดส่งอาหาร
+        </ThemedText>
         <HorizontalTags
           tags={dropoffs.map((d) => d.name)}
           selectedTag={
@@ -117,7 +152,9 @@ export default function SearchOrderPage() {
           onPressTag={(tag) => {
             const drop = dropoffs.find((d) => d.name === tag);
             if (drop) {
-              setSelectedDropoff(selectedDropoff === drop.dropoff_id ? null : drop.dropoff_id);
+              setSelectedDropoff(
+                selectedDropoff === drop.dropoff_id ? null : drop.dropoff_id
+              );
             }
           }}
         />
@@ -145,13 +182,36 @@ export default function SearchOrderPage() {
         <View style={{ height: 80 }} />
       </ScrollView>
 
-      <View style={styles.confirmButton}>
-        <ThemedButton
-          title={"เริ่มการจัดส่ง"}
-          variant="primary"
-          onPress={() => router.push("/(tabs)/order/confirmOrder")}
-        />
-      </View>
+      {visible && (
+        <View style={styles.iconcontainer}>
+          <View style={styles.circle}>
+            <MaterialIcons name="delivery-dining" size={40} color="white" />
+            <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+              <ThemedText style={styles.closeText}>X</ThemedText>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.numberContainer}>
+            <ThemedText
+              style={[
+                styles.number,
+                isAcceptedGreaterThanAvailable ? { color: "red" } : {},
+              ]}
+            >
+              {acceptedOrders.length} / {availableOrder}
+            </ThemedText>
+          </View>
+        </View>
+      )}
+
+      {acceptedOrders.length > 0 && (
+        <View style={styles.confirmButton}>
+          <ThemedButton
+            title={"เริ่มการจัดส่ง"}
+            variant="primary"
+            onPress={() => router.push("/(tabs)/order/confirmOrder")}
+          />
+        </View>
+      )}
     </LinearGradient>
   );
 }
@@ -171,5 +231,49 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 30,
     bottom: 80,
+  },
+  iconcontainer: {
+    position: "absolute",
+    bottom: 250,
+    right: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 10,
+  },
+  circle: {
+    backgroundColor: "#7EC850",
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+  },
+  closeButton: {
+    position: "absolute",
+    top: -10,
+    right: -10,
+    backgroundColor: "#2720204e",
+    borderRadius: 20,
+    width: 20,
+    height: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  closeText: {
+    fontSize: 16,
+    color: "white",
+  },
+  numberContainer: {
+    backgroundColor: "#7EC850",
+    paddingVertical: 5,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    marginTop: 4,
+  },
+  number: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });

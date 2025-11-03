@@ -1,4 +1,4 @@
-import { getMenubyId } from "@/api/store";
+import { getMenubyId, getStorebyId } from "@/api/store"; // ✅ เพิ่ม getStorebyId
 import { ThemedText } from "@/components/ThemedText";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -8,57 +8,106 @@ import { formatDateTime } from "./StatusBlock";
 
 export const OrderCard: React.FC<Props> = ({ order, isExpanded, onToggle }) => {
   const [menuDetails, setMenuDetails] = useState<Menu[]>([]);
+  const [storeImage, setStoreImage] = useState<string | null>(null); // ✅ เก็บรูปภาพร้าน
 
-  // ดึงข้อมูลเมนูเมื่อ order เปลี่ยนแปลง
+  // ✅ โหลดข้อมูลเมนูและร้าน
   useEffect(() => {
-    const fetchMenuDetails = async () => {
-      const menuData = await Promise.all(
-        order.menu_quantity.map(async (item) => {
-          const menu = await getMenubyId(item.menu_id); // ใช้ menu_id ในการดึงข้อมูลเมนู
-          return menu ? menu : { name: "", price: 0, detail: "", image_url: "https://png.pngtree.com/png-vector/20190820/ourmid/pngtree-no-image-vector-illustration-isolated-png-image_1694547.jpg" }; // กรณีที่เมนูไม่พบ ให้ใช้ค่าดีฟอลต์
-        })
-      );
-      setMenuDetails(menuData); // เก็บข้อมูลเมนูทั้งหมดใน state
+    const fetchData = async () => {
+      try {
+        // ดึงข้อมูลเมนู
+        const menuData = await Promise.all(
+          order.menu_quantity.map(async (item) => {
+            const menu = await getMenubyId(item.menu_id);
+            return (
+              menu || {
+                name: "",
+                price: 0,
+                detail: "",
+                image_url:
+                  "https://png.pngtree.com/png-vector/20190820/ourmid/pngtree-no-image-vector-illustration-isolated-png-image_1694547.jpg",
+              }
+            );
+          })
+        );
+        setMenuDetails(menuData);
+
+        // ✅ ดึงข้อมูลร้าน
+        const storeData = await getStorebyId(order.shop_id);
+        setStoreImage(
+          storeData?.shop_image_url ||
+            "https://png.pngtree.com/png-vector/20190820/ourmid/pngtree-no-image-vector-illustration-isolated-png-image_1694547.jpg"
+        );
+      } catch (error) {
+        console.error("Error fetching order details:", error);
+        setStoreImage(
+          "https://png.pngtree.com/png-vector/20190820/ourmid/pngtree-no-image-vector-illustration-isolated-png-image_1694547.jpg"
+        );
+      }
     };
 
-    fetchMenuDetails();
+    fetchData();
   }, [order]);
 
-  // ฟังก์ชันนี้จะใช้สำหรับดึงข้อมูลเมนูจากเมนูที่มีใน state
+  // ฟังก์ชันหาข้อมูลเมนูใน state
   const getItemDetails = (menuId: string) => {
     const menu = menuDetails.find((item) => item.menu_id === menuId);
-    return menu ? { name: menu.name, price: menu.price, detail: menu.detail, image_url: menu.image_url } : { name: "", price: 0, detail: "", image_url: "https://png.pngtree.com/png-vector/20190820/ourmid/pngtree-no-image-vector-illustration-isolated-png-image_1694547.jpg" }; // คืนชื่อ, ราคา, รายละเอียดของเมนู และ URL รูปภาพ
+    return (
+      menu || {
+        name: "",
+        price: 0,
+        detail: "",
+        image_url:
+          "https://png.pngtree.com/png-vector/20190820/ourmid/pngtree-no-image-vector-illustration-isolated-png-image_1694547.jpg",
+      }
+    );
   };
 
   return (
     <View style={styles.cardWrapper}>
       {/* Header */}
-      <Pressable style={styles.card} onPress={() => router.push(`/(tabs)/order/orderDetail?orderId=${order.order_id}`)}>
+      <Pressable
+        style={styles.card}
+        onPress={() =>
+          router.push(`/(tabs)/order/orderDetail?orderId=${order.order_id}`)
+        }
+      >
         <View style={styles.leftContent}>
           <ThemedText style={styles.storeName}>{order.shop_name}</ThemedText>
           <ThemedText style={styles.bonus}>+ ฿ {order.shipping_fee}</ThemedText>
 
           <View style={styles.infoRow}>
             <MaterialIcons name="location-on" size={16} color="#0A6847" />
-            <ThemedText style={styles.infoThemedText}>{order.canteen_name}</ThemedText>
+            <ThemedText style={styles.infoThemedText}>
+              {order.canteen_name}
+            </ThemedText>
           </View>
 
           <View style={styles.infoRow}>
             <MaterialIcons name="access-time" size={16} color="#0A6847" />
-            <ThemedText style={styles.infoThemedText}>{formatDateTime(order.appointment_time)}</ThemedText>
+            <ThemedText style={styles.infoThemedText}>
+              {formatDateTime(order.appointment_time)}
+            </ThemedText>
           </View>
 
           <View style={styles.infoRow}>
-            <MaterialIcons name="groups" size={16} color="#0A6847" />
-            <ThemedText style={styles.infoThemedText}>{order.delivery_method}</ThemedText>
+            <MaterialIcons name="motorcycle" size={16} color="#0A6847" />
+            <ThemedText style={styles.infoThemedText}>
+              {order.delivery_method}
+            </ThemedText>
           </View>
 
-          <ThemedText style={styles.OrderTotal}>Order Total : {order.amount}</ThemedText>
+          <ThemedText style={styles.OrderTotal}>
+            Order Total : {order.amount}
+          </ThemedText>
         </View>
 
-        {/* ใช้รูปภาพจากเมนูแรกหากมี */}
+        {/* ✅ ใช้รูปจากร้านแทนเมนู */}
         <Image
-          source={{ uri: menuDetails[0]?.image_url || "https://png.pngtree.com/png-vector/20190820/ourmid/pngtree-no-image-vector-illustration-isolated-png-image_1694547.jpg" }}
+          source={{
+            uri:
+              storeImage ||
+              "https://png.pngtree.com/png-vector/20190820/ourmid/pngtree-no-image-vector-illustration-isolated-png-image_1694547.jpg",
+          }}
           style={styles.image}
         />
       </Pressable>
@@ -70,10 +119,7 @@ export const OrderCard: React.FC<Props> = ({ order, isExpanded, onToggle }) => {
             const { name, price, detail, image_url } = getItemDetails(item.menu_id);
             return (
               <View key={item.menu_id} style={styles.itemCard}>
-                <Image
-                  source={{ uri: image_url }}
-                  style={styles.itemImage}
-                />
+                <Image source={{ uri: image_url }} style={styles.itemImage} />
                 <View style={{ flex: 1, marginLeft: 10 }}>
                   <ThemedText style={styles.itemName}>{name}</ThemedText>
                   <ThemedText style={styles.itemDesc}>{detail}</ThemedText>
@@ -95,7 +141,7 @@ export const OrderCard: React.FC<Props> = ({ order, isExpanded, onToggle }) => {
           size={28}
           color="#000"
         />
-        <ThemedText style={styles.itemCountThemedText}>{order.menu_quantity.length} รายการ</ThemedText>
+        
       </Pressable>
     </View>
   );
@@ -107,7 +153,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     marginBottom: 12,
     width: 350,
-    alignSelf: 'center',
+    alignSelf: "center",
   },
   card: {
     backgroundColor: "#fff",
@@ -117,7 +163,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     elevation: 3,
-    width: '100%',
+    width: "100%",
   },
   leftContent: {
     flex: 1,
@@ -198,7 +244,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 16,
     position: "relative",
-    width: '100%', // เพิ่มความกว้างเต็ม
+    width: "100%",
   },
   itemCountThemedText: {
     position: "absolute",

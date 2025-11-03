@@ -1,12 +1,12 @@
 import { getUserbyId } from "@/api/order";
-import { getWrittenReviews, mapReviewWithUsers } from "@/api/review";
+import { getUserReviews, mapReviewWithUsers } from "@/api/review"; // ✅ เปลี่ยนตรงนี้
 import { OtherReviewCard } from "@/components/OtherReviewCard";
 import { RatingStars } from "@/components/RatingStars";
 import SortTabs from "@/components/SortTabs";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
 import { useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Dimensions,
   FlatList,
@@ -15,7 +15,6 @@ import {
   Text,
   View,
 } from "react-native";
-
 
 const screenHeight = Dimensions.get("window").height;
 
@@ -33,70 +32,56 @@ interface Review {
 }
 
 export default function OtherProfileScreen() {
-  const { userId } = useLocalSearchParams(); // รับค่า userId จาก route parameter
+  const { userId } = useLocalSearchParams();
   const [userProfile, setUserProfile] = useState<any>(null);
   const [averageRating, setAverageRating] = useState<number>(0);
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [selectedTab, setSelectedTab] = useState<"yourReviews" | "receivedReviews">("yourReviews");
   const [sortOption, setSortOption] = useState<"latest" | "oldest" | "highest" | "lowest">("latest");
-
 
   useEffect(() => {
     const fetchData = async () => {
-  try {
-    if (!userId) return;
+      try {
+        if (!userId) return;
 
-    // ดึงข้อมูลโปรไฟล์ของ userId
-    const profile = await getUserbyId(userId as string);
-    setUserProfile(profile);
+        //  ดึงข้อมูลโปรไฟล์ของ userId
+        const profile = await getUserbyId(userId as string);
+        setUserProfile(profile);
 
-    // ดึงรีวิวทั้งหมด
-    let allReviews = await getWrittenReviews();
+        // ดึงรีวิวที่ผู้ใช้นี้ได้รับ
+        let receivedReviews = await getUserReviews(userId as string);
 
-    // ตรวจสอบว่า allReviews เป็น null หรือไม่
-    if (allReviews === null) {
-      allReviews = [];  // กำหนดให้เป็นอาร์เรย์ว่าง
-      console.warn("ไม่มีข้อมูลรีวิวสำหรับผู้ใช้นี้");
-    }
-    console.log("All reviews fetched:", allReviews);
-    // ตรวจสอบว่า allReviews เป็นอาร์เรย์หรือไม่
-    if (!Array.isArray(allReviews)) {
-      throw new Error("ข้อมูลรีวิวไม่ถูกต้อง");
-    }
+        if (!Array.isArray(receivedReviews)) {
+          console.warn("รูปแบบข้อมูลรีวิวไม่ถูกต้อง");
+          receivedReviews = [];
+        }
 
-    // กรองเฉพาะรีวิวที่ target เป็น userId นี้
-    const filteredReviews = allReviews.filter(
-      (r) => r.user_target_id === userId
-    );
+        //  map reviewer info ให้ครบ
+        const formattedReviews = await mapReviewWithUsers(receivedReviews);
+        setReviews(formattedReviews);
 
-    // map reviewer info ให้ครบ
-    const formattedReviews = await mapReviewWithUsers(filteredReviews);
-    setReviews(formattedReviews);
-
-    // คำนวณค่าเฉลี่ยคะแนน
-    const avg =
-      formattedReviews.length > 0
-        ? formattedReviews.reduce((sum, r) => sum + r.rating, 0) / formattedReviews.length
-        : 0;
-    setAverageRating(avg);
-  } catch (err) {
-    console.error(err);
-    setError("ไม่สามารถโหลดข้อมูลได้");
-  } finally {
-    setLoading(false);
-  }
-};
-
+        // คำนวณค่าเฉลี่ยคะแนน
+        const avg =
+          formattedReviews.length > 0
+            ? formattedReviews.reduce((sum, r) => sum + r.rating, 0) / formattedReviews.length
+            : 0;
+        setAverageRating(avg);
+      } catch (err) {
+        console.error("Error loading profile data:", err);
+        setError("ไม่สามารถโหลดข้อมูลได้");
+      } finally {
+        setLoading(false);
+      }
+    };
 
     fetchData();
   }, [userId]);
-  console.log("User Profile:", userId);
 
   if (loading) return <Text>Loading...</Text>;
   if (error) return <Text>{error}</Text>;
+
   const sortReviews = (data: Review[]) => {
     switch (sortOption) {
       case "latest":
@@ -113,11 +98,19 @@ export default function OtherProfileScreen() {
   };
 
   const sortedReviews = sortReviews(reviews);
+  const getGenderColor = (gender: string) => {
+    if (gender.toLowerCase() === "male") {
+      return "#2567ecff"; // กำหนดสีฟ้าให้ชาย
+    } else if (gender.toLowerCase() === "female") {
+      return "#f147b2ff"; // กำหนดสีชมพูให้หญิง
+    }
+    return "#888"; 
+  };
 
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={{ alignItems: "center", }} >
+      <View style={{ alignItems: "center" }}>
         <View style={styles.headerWrapper}>
           <View style={styles.curvedHeader} />
         </View>
@@ -132,11 +125,21 @@ export default function OtherProfileScreen() {
           />
         </View>
 
-        {/* Username */}
-        <ThemedText style={styles.username}>
-          {userProfile?.username || "username"}{" "}
-          {userProfile?.gender === "male" ? "♂" : "♀"}
-        </ThemedText>
+         <ThemedText style={styles.username}>
+                {userProfile?.username || "username"}{" "}
+                <Text
+                  style={{
+                    color: getGenderColor(userProfile?.gender || ""),
+                    fontWeight: "bold",
+                  }}
+                >
+                  {userProfile?.gender?.toLowerCase() === "male"
+                    ? "♂"
+                    : userProfile?.gender?.toLowerCase() === "female"
+                    ? "♀"
+                    : ""}
+                </Text>
+              </ThemedText>
 
         {/* Full name */}
         <ThemedText style={styles.fullName}>
@@ -155,8 +158,8 @@ export default function OtherProfileScreen() {
           {reviews.length} Ratings
         </ThemedText>
       </View>
-      <SortTabs sortOption={sortOption} setSortOption={setSortOption} />
 
+      <SortTabs sortOption={sortOption} setSortOption={setSortOption} />
 
       {/* รีวิวที่ได้รับ */}
       {reviews.length > 0 ? (
@@ -177,7 +180,7 @@ export default function OtherProfileScreen() {
           )}
         />
       ) : (
-        <ThemedText style={styles.noReviewsText} >ยังไม่มีรีวิว</ThemedText> // หากไม่มีรีวิวให้แสดงข้อความนี้
+        <ThemedText style={styles.noReviewsText}>ยังไม่มีรีวิว</ThemedText>
       )}
     </View>
   );
@@ -186,24 +189,23 @@ export default function OtherProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.secondary,
-
+    backgroundColor: Colors.green,
   },
   headerWrapper: {
     width: "100%",
-    height: 160,
+    height: 100,
     backgroundColor: "transparent",
     position: "relative",
     zIndex: 0,
   },
   curvedHeader: {
     position: "absolute",
-    top: 150,
+    top: 100,
     width: "100%",
     height: screenHeight,
     backgroundColor: Colors.white,
-    borderTopLeftRadius: 120,
-    borderTopRightRadius: 120,
+    borderTopLeftRadius: 180,
+    borderTopRightRadius: 180,
   },
   avatarContainer: {
     marginTop: -70,

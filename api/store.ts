@@ -7,7 +7,7 @@ export interface Stores {
   shop_id: string;
   adress: string;
   canteen_name: string;
-  shopimage_url: string | null;
+  shop_image_url: string | null;
   name: string;
   state: boolean;
   tags: string[];

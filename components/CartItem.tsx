@@ -1,7 +1,7 @@
 import { Colors } from "@/constants/Colors";
 import { MaterialIcons } from "@expo/vector-icons";
 import React, { useRef } from "react";
-import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Image, Pressable, StyleSheet, View } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import { ThemedText } from "./ThemedText";
 
@@ -37,14 +37,18 @@ export default function CartItem({
       style={styles.deleteButton}
       onPress={() => {
         swipeableRef.current?.close();
-        Alert.alert("ลบรายการ", "คุณต้องการลบสินค้านี้ใช่หรือไม่?", [
-          { text: "ยกเลิก", style: "cancel" },
-          {
-            text: "ลบ",
-            style: "destructive",
-            onPress: () => deleteItem(item.menu_id),
-          },
-        ]);
+        Alert.alert(
+          "Remove Menu",
+          "Do you want to remove this menu from your cart?",
+          [
+            { text: "Cancel", style: "cancel" },
+            {
+              text: "Remove",
+              style: "destructive",
+              onPress: () => deleteItem(item.menu_id),
+            },
+          ]
+        );
       }}
     >
       <MaterialIcons name="delete" size={32} color="white" />
@@ -74,14 +78,14 @@ export default function CartItem({
               style={styles.qtyBtn}
               onPress={() => updateQuantity(item.menu_id, -1)}
             >
-              <Text style={styles.qtyBtnText}>-</Text>
+              <ThemedText style={styles.qtyBtnText}>-</ThemedText>
             </Pressable>
-            <Text style={styles.qtyNumber}>{item.quantity}</Text>
+            <ThemedText style={styles.qtyNumber}>{item.quantity}</ThemedText>
             <Pressable
               style={styles.qtyBtn}
               onPress={() => updateQuantity(item.menu_id, 1)}
             >
-              <Text style={styles.qtyBtnText}>+</Text>
+              <ThemedText style={styles.qtyBtnText}>+</ThemedText>
             </Pressable>
           </View>
         </View>

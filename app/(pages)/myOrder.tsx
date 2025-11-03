@@ -1,11 +1,11 @@
+import { getMyOrder, Order, User } from "@/api/order";
 import { StatusBlock } from "@/components/StatusBlock";
+import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
 import { LinearGradient } from "expo-linear-gradient";
-import { FlatList, Pressable, View } from "react-native";
-import { useEffect, useState } from 'react';
-import { getMyOrder, Order, User } from "@/api/order";
 import { router } from "expo-router";
-import { ThemedText } from "@/components/ThemedText";
+import { useEffect, useState } from "react";
+import { FlatList, Pressable, View } from "react-native";
 
 export default function myOrder() {
   const [myOrder, setMyOrder] = useState<(Order & { User?: User })[]>([]);
@@ -15,11 +15,11 @@ export default function myOrder() {
     const fetchData = async () => {
       try {
         const response = await getMyOrder();
+        console.log("my order", response);
         setMyOrder(response);
-        console.log(response)
       } catch (err) {
-        console.error(err);
         setMyOrder([]);
+        console.error(err);
       } finally {
         setLoading(false);
       }
@@ -34,7 +34,7 @@ export default function myOrder() {
       end={{ x: 0, y: 1 }}
       style={{ flex: 1 }}
     >
-      <View style={{ flex: 1, alignItems: 'center' }}>
+      <View style={{ flex: 1, alignItems: "center" }}>
         <FlatList
           data={[...myOrder].reverse() ?? []}
           keyExtractor={(item, index) => `${item.order_id}-${index}`}
@@ -43,8 +43,15 @@ export default function myOrder() {
           ListFooterComponent={<View style={{ marginBottom: 50 }} />}
           ListEmptyComponent={
             !loading ? (
-              <View style={{ flex: 1, alignItems: "center", justifyContent: "center", marginTop: 40 }}>
-                <ThemedText style={{ fontSize: 16,}}>
+              <View
+                style={{
+                  flex: 1,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginTop: 40,
+                }}
+              >
+                <ThemedText style={{ fontSize: 16 }}>
                   ไม่มีคำสั่งซื้อในขณะนี้
                 </ThemedText>
               </View>
@@ -77,7 +84,7 @@ export default function myOrder() {
                   shipping_fee={item.shipping_fee}
                   price={item.amount}
                   status={item.status}
-                  type="customer"
+                  type="receiver"
                 />
               </Pressable>
             );

@@ -120,7 +120,7 @@ export function OrderBlock({ name, canteen, store, appointmentTime, deliveryMeth
         {confirmImage && confirmImage !== '' && (
             <View style={{paddingTop: 10}}>
                 <ThemedText type='subtitle' style={{paddingBottom: 10}}>หลักฐานการส่ง</ThemedText>
-                <Image source={{ uri: confirmImage }} style={{ width: 350, height: 200,}} />
+                <Image source={{ uri: confirmImage }} style={{ width: 350, height: 200, borderRadius:20}} />
             </View>
         )}
     </View>

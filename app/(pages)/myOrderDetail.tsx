@@ -3,24 +3,27 @@ import { OrderBlock } from "@/components/OrderBlock";
 import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
-import { useOrderContext } from "@/store/order-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import {
-  Alert,
-  Pressable,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { SafeAreaView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function OrderDetail() {
   const { orderId } = useLocalSearchParams<{ orderId: string }>();
-  const [order, setOrder] = useState<(Order & { User?: User; menus: { name: string; detail: string; price: number; quantity: number }[]; totalQuantity: number; dropOffLocation?: DropOff;})>();
+  const [order, setOrder] = useState<
+    Order & {
+      User?: User;
+      menus: {
+        name: string;
+        detail: string;
+        price: number;
+        quantity: number;
+      }[];
+      totalQuantity: number;
+      dropOffLocation?: DropOff;
+    }
+  >();
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -33,7 +36,7 @@ export default function OrderDetail() {
       try {
         const orderData = await getOrderbyId(orderId);
         setOrder(orderData);
-        console.log(order?.confirmation_image_url);
+        console.log("image", order?.confirmation_image_url);
       } catch (error) {
         console.log("Error fetching order:", error);
       } finally {
@@ -43,7 +46,6 @@ export default function OrderDetail() {
 
     fetchOrder();
   }, [orderId]);
-
 
   if (loading) {
     return (
@@ -95,16 +97,24 @@ export default function OrderDetail() {
           canteen={order.canteen_name}
           menus={order.menus}
           orderPrice={order.amount}
-          name={order.User?.username ?? 'Unknown'}
-          address={order.dropOffLocation?.name ?? ''}
-          addressDetail={order.dropOffLocation?.detail ?? ''}
+          name={order.User?.username ?? "Unknown"}
+          address={order.dropOffLocation?.name ?? ""}
+          addressDetail={order.dropOffLocation?.detail ?? ""}
           deliveryMethod={order.delivery_method}
           appointmentTime={order.appointment_time}
           riderEarn={order.shipping_fee}
           type="myOrderDetail"
           confirmImage={order.confirmation_image_url}
         />
-
+        <ThemedButton
+          style={styles.button}
+          title={"Review Raider"}
+          onPress={() =>
+            router.push(
+              `/review?orderId=${order.order_id}&targetUserId=${order.user_delivery_id}`
+            )
+          }
+        />
       </SafeAreaView>
     </LinearGradient>
   );

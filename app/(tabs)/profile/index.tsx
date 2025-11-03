@@ -39,14 +39,14 @@ const ProfileScreen = () => {
       const receivedReviewsRaw = (await getReceivedReviews()) || []; // ✅ ถ้า null ให้เป็น array ว่าง
       const formattedReviews = await mapReviewWithUsers(receivedReviewsRaw || []); // safety
 
-      const receivedOnly = Array.isArray(formattedReviews) 
-      ? formattedReviews.filter((r: any) => r.otherUser === profileData.username) 
-      : []; 
+      const receivedOnly = Array.isArray(formattedReviews)
+        ? formattedReviews.filter((r: any) => r.otherUser === profileData.username)
+        : [];
 
       const avg =
         receivedOnly.length > 0
           ? receivedOnly.reduce((sum: number, r: any) => sum + r.rating, 0) /
-            receivedOnly.length
+          receivedOnly.length
           : 0;
 
       setAverageRating(avg);
@@ -71,13 +71,24 @@ const ProfileScreen = () => {
     router.replace("/(auth)/login");
   };
 
+
   if (loading) return <Text>Loading...</Text>;
   if (error) return <Text>{error}</Text>;
   if (!isAuthenticated) return null; // fallback
 
+  const getGenderColor = (gender: string) => {
+    if (gender.toLowerCase() === "male") {
+      return "#2567ecff"; // กำหนดสีฟ้าให้ชาย
+    } else if (gender.toLowerCase() === "female") {
+      return "#f147b2ff"; // กำหนดสีชมพูให้หญิง
+    }
+    return "#888"; 
+  };
+
   return (
     <View style={styles.container}>
       {/* Header */}
+
       <View style={styles.headerWrapper}>
         <View style={styles.curvedHeader} />
         <Pressable onPress={handleLogOut} style={styles.logoutButton}>
@@ -97,16 +108,30 @@ const ProfileScreen = () => {
 
       {/* Username */}
 
-      <ThemedText style={styles.username}>
-        {userProfile?.username || "username"}
+       <ThemedText style={styles.username}>
+        {userProfile?.username || "username"}{" "}
+        <Text
+          style={{
+            color: getGenderColor(userProfile?.gender || ""),
+            fontWeight: "bold",
+          }}
+        >
+          {userProfile?.gender?.toLowerCase() === "male"
+            ? "♂"
+            : userProfile?.gender?.toLowerCase() === "female"
+            ? "♀"
+            : ""}
+        </Text>
       </ThemedText>
+
+
       <ThemedText style={styles.fullName}>
         {userProfile?.fname} {userProfile?.lname}
       </ThemedText>
 
 
       {/* Edit Profile */}
-      <Pressable style={styles.editButton}>
+      <Pressable style={styles.editButton} onPress={() => router.push("/editProfile")}>
         <ThemedText style={styles.editThemedText}>Edit Profile</ThemedText>
       </Pressable>
 
@@ -132,7 +157,7 @@ const ProfileScreen = () => {
           />
           <ThemedText style={styles.walletAmount}>฿ {walletBalance}</ThemedText>
         </View>
-        <Pressable style={styles.walletButton}onPress={() => router.push("/(tabs)/payment")}>
+        <Pressable style={styles.walletButton} onPress={() => router.push("/(tabs)/payment")}>
           <ThemedText style={styles.walletButtonThemedText}>Add Wallet</ThemedText>
         </Pressable>
       </View>
@@ -146,8 +171,9 @@ const ProfileScreen = () => {
           <View style={styles.row}>
             <MaterialIcons name="list-alt" size={26} color={Colors.primary} />
             <View style={{ marginLeft: 10 }}>
-              <ThemedText type="subtitle">ออเดอร์ของฉัน</ThemedText>
-              <Text style={styles.desc}>ดูประวัติและรายละเอียดคำสั่งซื้อ</Text>
+              <ThemedText type="subtitle">My Orders</ThemedText>
+              <Text style={styles.desc}>View your order history and details</Text>
+
             </View>
           </View>
           <MaterialIcons name="chevron-right" size={26} color={Colors.primary} />
@@ -160,8 +186,9 @@ const ProfileScreen = () => {
           <View style={styles.row}>
             <MaterialIcons name="delivery-dining" size={26} color={Colors.primary} />
             <View style={{ marginLeft: 10 }}>
-              <ThemedText type="subtitle">การจัดส่งของฉัน</ThemedText>
-              <Text style={styles.desc}>ยืนยันและติดตามสถานะการจัดส่ง</Text>
+              <ThemedText type="subtitle">My Deliveries</ThemedText>
+              <Text style={styles.desc}>Confirm and track delivery status</Text>
+
             </View>
           </View>
           <MaterialIcons name="chevron-right" size={26} color={Colors.primary} />
@@ -174,17 +201,17 @@ const ProfileScreen = () => {
 export default ProfileScreen;
 
 
-// styles (ไม่เปลี่ยน)
+
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.secondary, alignItems: "center" },
+  container: { flex: 1, backgroundColor: Colors.primary, alignItems: "center" },
   headerWrapper: { width: "100%", height: 160, backgroundColor: "transparent", position: "relative", zIndex: 0 },
-  curvedHeader: { position: "absolute", top: 150, width: "100%", height: screenHeight, backgroundColor: Colors.white, borderTopLeftRadius: 120, borderTopRightRadius: 120 },
+  curvedHeader: { position: "absolute", top: 150, width: "100%", height: screenHeight, backgroundColor: Colors.white, borderTopLeftRadius: 180, borderTopRightRadius: 180 },
   logoutButton: { position: "absolute", top: 20, right: 20, padding: 10, backgroundColor: Colors.white, borderRadius: 50, elevation: 3 },
   avatarContainer: { marginTop: -70, marginBottom: 15, zIndex: 2 },
   avatarCircle: { width: 150, height: 150, borderRadius: 80, backgroundColor: "#aaa" },
   username: { fontWeight: "bold", fontSize: 24 },
   fullName: { color: "gray", fontSize: 16, marginBottom: 16 },
-  editButton: { backgroundColor: "#A4DA99", paddingHorizontal: 20, paddingVertical: 6, borderRadius: 20, marginBottom: 16 },
+  editButton: { backgroundColor: Colors.green, paddingHorizontal: 20, paddingVertical: 6, borderRadius: 20, marginBottom: 16 },
   editThemedText: { color: "#fff", fontWeight: "bold" },
   ratingThemedText: { fontSize: 16, marginBottom: 8 },
   walletBox: { backgroundColor: "#FDE1D5", width: "80%", padding: 16, alignItems: "flex-end", alignSelf: "center", borderRadius: 12, marginBottom: 12, elevation: 2 },

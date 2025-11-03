@@ -1,4 +1,4 @@
-import { getStore, Stores, getPopularStore } from "@/api/store";
+import { getPopularStore, getStore, Stores } from "@/api/store";
 import { SearchBar } from "@/components/SearchBar";
 import { StoreBlock } from "@/components/StoreBlock";
 import { ThemedText } from "@/components/ThemedText";
@@ -33,9 +33,10 @@ export default function Index() {
   };
 
   const renderStore: ListRenderItem<Stores> = ({ item }) => {
+    console.log(item.shop_image_url);
     const imageSource =
-      item.shopimage_url && item.shopimage_url.trim() !== ""
-        ? { uri: fixSupabaseUrl(item.shopimage_url) }
+      item.shop_image_url && item.shop_image_url.trim() !== ""
+        ? { uri: fixSupabaseUrl(item.shop_image_url) }
         : default_image;
     return (
       <StoreBlock

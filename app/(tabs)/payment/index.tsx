@@ -7,7 +7,8 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useContext, useEffect, useState } from "react";
-import { Alert, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Alert, Image,Pressable, StyleSheet,ScrollView, Text, TextInput, View } from "react-native";
+
 
 const TopUpScreen = () => {
   const router = useRouter();
@@ -16,6 +17,7 @@ const TopUpScreen = () => {
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<any>(null); // สำหรับเก็บข้อมูลผู้ใช้
   const [walletBalance, setWalletBalance] = useState<number>(0); // สำหรับเก็บยอดเงินในกระเป๋า
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("K PLUS"); // สำหรับเก็บช่องทางการชำระเงินที่เลือก
 
   // ดึงข้อมูลผู้ใช้และยอดเงิน
   useEffect(() => {
@@ -38,7 +40,7 @@ const TopUpScreen = () => {
     const parsedAmount = parseFloat(amount); // แปลงค่าจำนวนเงินเป็นตัวเลขทศนิยม
 
     if (!parsedAmount || parsedAmount < 10) {
-      Alert.alert("ผิดพลาด", "กรุณากรอกจำนวนเงินขั้นต่ำ 10 บาท");
+      Alert.alert("Top Up Failed", "Please enter a minimum amount of 10 Baht");
       return;
     }
 
@@ -51,38 +53,71 @@ const TopUpScreen = () => {
       setWalletBalance(newBalance); // อัปเดตยอดเงินใหม่
       router.back(); // กลับไปหน้าโปรไฟล์
     } catch (err) {
-      Alert.alert("เกิดข้อผิดพลาด", "ไม่สามารถเติมเงินได้");
+      Alert.alert("Error", "Unable to complete the transaction.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <LinearGradient
-      colors={Colors.bg}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-      style={{ flex: 1 }}
-    >
+    <LinearGradient colors={Colors.bg} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={{ flex: 1 }}>
       <View style={styles.container}>
         {/* Header */}
-        
+
         {/* แสดงชื่อผู้ใช้และยอดเงิน */}
         <View style={styles.userInfo}>
           <ThemedText style={styles.username}>{user?.username}</ThemedText>
           <ThemedText style={styles.walletInfo}>
-            ฿{walletBalance} {/* แสดงยอดเงินล่าสุด */}
+            ฿ {walletBalance} {/* แสดงยอดเงินล่าสุด */}
           </ThemedText>
         </View>
 
         {/* ช่องทางชำระเงิน */}
-        <View style={styles.paymentMethod}>
-          <ThemedText style={styles.paymentLabel}>ช่องทางการเติมเงิน</ThemedText>
-          <View style={styles.paymentOption}>
-            <MaterialIcons name="credit-card" size={24} color={Colors.primary} />
-            <ThemedText style={styles.paymentText}>แอป K PLUS</ThemedText>
-          </View>
-        </View>
+<View style={styles.paymentMethod}>
+  <ThemedText style={styles.paymentLabel}>ช่องทางการเติมเงิน</ThemedText>
+
+  <ScrollView
+    horizontal
+    showsHorizontalScrollIndicator={false}
+    contentContainerStyle={{ paddingVertical: 10, paddingHorizontal: 10 }}
+  >
+    {[
+      { name: "K PLUS", image: require("@/assets/images/kplus.png") },
+      { name: "TrueMoney", image: require("@/assets/images/truemoney.png") },
+      { name: "Rabbit LINE Pay", image: require("@/assets/images/rabbit.jpg") },
+      { name: "AirPay", image: require("@/assets/images/airpay.jpg") },
+      { name: "PromptPay", image: require("@/assets/images/promptPay.jpg") },
+    ].map((method) => (
+      <Pressable
+        key={method.name}
+        style={[
+          styles.paymentCard,
+          selectedPaymentMethod === method.name && styles.paymentCardActive,
+        ]}
+        onPress={() => setSelectedPaymentMethod(method.name)}
+      >
+        <Image
+          source={method.image}
+          style={[
+            styles.paymentImage,
+            selectedPaymentMethod === method.name && styles.paymentImageActive,
+          ]}
+          resizeMode="contain"
+        />
+        <Text
+          style={[
+            styles.paymentCardText,
+            selectedPaymentMethod === method.name && styles.paymentCardTextActive,
+          ]}
+        >
+          {method.name}
+        </Text>
+      </Pressable>
+    ))}
+  </ScrollView>
+</View>
+
+
 
         {/* การกรอกจำนวนเงิน */}
         <View style={styles.box}>
@@ -125,7 +160,7 @@ const TopUpScreen = () => {
             disabled={loading}
           >
             <Text style={styles.submitText}>
-              {loading ? "กำลังดำเนินการ..." : `เติมเงิน ${amount || 0} บาท`}
+              {loading ? "Processing..." : `Top up ${amount || 0} THB`}
             </Text>
           </Pressable>
         </View>
@@ -141,17 +176,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     paddingTop: 60,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    width: "85%",
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginLeft: 10,
   },
   userInfo: {
     width: "85%",
@@ -186,10 +210,56 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 8,
   },
+  
   paymentOption: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    backgroundColor: "#f0f0f0",
+  },
+
+  
+paymentCard: {
+  width: 130,
+  height: 130,
+  borderRadius: 16,
+  backgroundColor: "#fff",
+  marginRight: 15,
+  justifyContent: "center",
+  alignItems: "center",
+  elevation: 3,
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.2,
+  shadowRadius: 4,
+},
+paymentCardActive: {
+  backgroundColor: Colors.primary,
+  elevation: 6,
+},
+paymentCardText: {
+  marginTop: 10,
+  fontSize: 14,
+  color: "#333",
+  textAlign: "center",
+},
+paymentCardTextActive: {
+  color: "#fff",
+},
+paymentImage: {
+  width: 70,
+  height: 70,
+  borderRadius: 12,
+},
+paymentImageActive: {
+ 
+},
+
+  selectedPaymentOption: {
+    backgroundColor: Colors.primary,
   },
   paymentText: {
     fontSize: 16,
@@ -219,6 +289,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     marginBottom: 20,
   },
+  quickText: { color: "#000", }, quickTextActive: { color: "#fff", },
   quickButton: {
     borderWidth: 1,
     borderColor: "#aaa",
@@ -230,12 +301,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
     borderColor: Colors.primary,
   },
-  quickText: {
-    color: "#000",
-  },
-  quickTextActive: {
-    color: "#fff",
-  },
   submitButton: {
     backgroundColor: Colors.primary,
     paddingVertical: 12,
@@ -244,7 +309,6 @@ const styles = StyleSheet.create({
   },
   submitText: {
     color: "#fff",
-    fontWeight: "bold",
     fontSize: 16,
   },
 });
