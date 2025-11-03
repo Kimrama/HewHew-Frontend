@@ -4,7 +4,7 @@ import {
   getCanteens,
   getDropoffs,
   getOrder,
-  Order,
+  Order,getUser
 } from "@/api/order";
 import { HorizontalTags } from "@/components/HorizontalTags";
 import { OrderCard } from "@/components/OrderInListCard";
@@ -22,8 +22,11 @@ import {
   ScrollView,
   StyleSheet,
   UIManager,
-  View,
+  View, TouchableOpacity
 } from "react-native";
+import { MaterialIcons } from "@expo/vector-icons"; // นำเข้า Material Icons
+
+
 
 if (
   Platform.OS === "android" &&
@@ -47,19 +50,22 @@ export default function SearchOrderPage() {
   const [loading, setLoading] = useState(true);
 
   const { acceptedOrders } = useOrderContext();
+  const [availableOrder, setAvailableOrder] = useState<number>(0);
+  const [visible, setVisible] = useState(true);
 
   useEffect(() => {
     const fetchAll = async () => {
       setLoading(true);
       try {
-        const [orderRes, canteenRes, dropoffRes] = await Promise.all([
+        const [orderRes, canteenRes, dropoffRes,userRes] = await Promise.all([
           getOrder(),
           getCanteens(),
-          getDropoffs(),
+          getDropoffs(),getUser(),
         ]);
         setOrders(orderRes);
         setCanteens(canteenRes);
         setDropoffs(dropoffRes);
+        setAvailableOrder(userRes.available_order);
       } catch (err) {
         console.error(err);
       } finally {
@@ -95,6 +101,15 @@ export default function SearchOrderPage() {
       </View>
     );
   }
+
+  
+
+  const handleClose = () => {
+    setVisible(false);
+  };
+
+  const isAcceptedGreaterThanAvailable = acceptedOrders.length > availableOrder;
+
 
   return (
     <LinearGradient
@@ -168,6 +183,30 @@ export default function SearchOrderPage() {
 
         <View style={{ height: 80 }} />
       </ScrollView>
+
+       {visible && (
+        <View style={styles.iconcontainer}>
+          <View style={styles.circle}>
+            <MaterialIcons name="delivery-dining" size={40} color="white" />
+            <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+              <ThemedText style={styles.closeText}>X</ThemedText>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.numberContainer}>
+            <ThemedText
+              style={[
+                styles.number,
+                isAcceptedGreaterThanAvailable ? { color: "red" } : {}
+              ]}
+            >
+              {acceptedOrders.length} / {availableOrder}
+            </ThemedText>
+          </View>
+
+        </View>
+        
+      )}
+
       {acceptedOrders.length > 0 && (
         <View style={styles.confirmButton}>
           <ThemedButton
@@ -196,5 +235,49 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 30,
     bottom: 80,
+  },
+  iconcontainer: {
+    position: "absolute",
+    bottom: 250, 
+    right: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 10,
+  },
+  circle: {
+    backgroundColor: "#7EC850", 
+    width: 60,
+    height: 60,
+    borderRadius: 30, 
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative", 
+  },
+  closeButton: {
+    position: "absolute",
+    top: -10,
+    right: -10,
+    backgroundColor: "#2720204e", 
+    borderRadius: 20,
+    width: 20,
+    height: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  closeText: {
+    fontSize: 16,
+    color: "white",
+  },
+  numberContainer: {
+    backgroundColor: "#7EC850", 
+    paddingVertical: 5,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    marginTop: 4,
+  },
+  number: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });

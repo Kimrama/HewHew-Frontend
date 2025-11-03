@@ -11,6 +11,7 @@ export interface User {
   gender: string;
   profile_image_url: string;
   wallet: number;
+  available_order: number; 
 }
 
 export interface menu_quantity {
