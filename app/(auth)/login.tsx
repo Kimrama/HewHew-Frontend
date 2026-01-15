@@ -1,18 +1,11 @@
 import { signIn } from "@/api/auth";
+import { ThemedButton } from "@/components/ThemedButton";
+import { ThemedText } from "@/components/ThemedText";
 import { AuthContext } from "@/store/auth-context";
 import Ionicons from "@expo/vector-icons/build/Ionicons";
-import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useContext, useState } from "react";
-import {
-  Alert,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Alert, Pressable, StyleSheet, TextInput, View } from "react-native";
 import { UserSignIn } from "../../types/user";
 
 export default function Login() {
@@ -51,7 +44,7 @@ export default function Login() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.brand}>HewHew</Text>
+      <ThemedText style={styles.brand}>HewHew</ThemedText>
       <Pressable
         onPress={() => router.replace("/home")}
         style={{ position: "absolute", top: 40, left: 20 }}
@@ -60,8 +53,10 @@ export default function Login() {
       </Pressable>
 
       <View style={styles.inputContainer}>
-        <Text style={styles.title}>Sign In</Text>
-        <Text style={styles.label}>Username</Text>
+        <View style={styles.title}>
+          <ThemedText type="titleLarge">Sign In</ThemedText>
+        </View>
+        <ThemedText style={styles.label}>Username</ThemedText>
         <TextInput
           style={styles.input}
           placeholder="Username"
@@ -72,7 +67,7 @@ export default function Login() {
           keyboardType="email-address"
           autoCapitalize="none"
         />
-        <Text style={styles.label}>Password</Text>
+        <ThemedText style={styles.label}>Password</ThemedText>
         <TextInput
           style={styles.input}
           placeholder="Password"
@@ -84,22 +79,10 @@ export default function Login() {
         />
       </View>
       <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={[styles.button, isLoading && styles.buttonDisabled]}
-          onPress={handleLogin}
-          disabled={isLoading}
-        >
-          <LinearGradient
-            colors={["#0A6847", "#7ABA78"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.gradient}
-          >
-            <Text style={styles.buttonText}>
-              {isLoading ? "Signing in..." : "Sign In"}
-            </Text>
-          </LinearGradient>
-        </TouchableOpacity>
+        <View style={styles.button}>
+          <ThemedButton onPress={handleLogin} title="Sign In"></ThemedButton>
+        </View>
+
         <View style={styles.line} />
         <View
           style={{
@@ -108,9 +91,9 @@ export default function Login() {
             marginTop: 20,
           }}
         >
-          <Text style={{ textAlign: "center", alignItems: "center" }}>
+          <ThemedText style={{ textAlign: "center", alignItems: "center" }}>
             Don't have any account?{" "}
-          </Text>
+          </ThemedText>
           <Pressable
             style={{
               alignItems: "center",
@@ -119,7 +102,7 @@ export default function Login() {
             }}
             onPress={() => router.replace("/(auth)/register")}
           >
-            <Text style={{ color: "#0A6847" }}>Sign Up</Text>
+            <ThemedText style={{ color: "#0A6847" }}>Sign Up</ThemedText>
           </Pressable>
         </View>
       </View>
@@ -148,7 +131,7 @@ const styles = StyleSheet.create({
   brand: {
     position: "absolute",
     top: 120,
-    fontSize: 45,
+    fontSize: 64,
     fontFamily: "KaushanScript_400Regular",
     color: "#0A6847",
   },
@@ -171,6 +154,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     fontSize: 16,
     backgroundColor: "white",
+    fontFamily: "Prompt_400Regular",
   },
   gradient: {
     paddingVertical: 15,
@@ -208,6 +192,7 @@ const styles = StyleSheet.create({
   },
   button: {
     marginBottom: 20,
+    alignItems: "center",
   },
   line: {
     borderBottomColor: "black",

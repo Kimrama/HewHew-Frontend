@@ -4,8 +4,10 @@ import {
   UserSignIn,
   UserSignUp,
 } from "@/types/user";
-import { EXPO_API } from "@env";
+import * as SecureStore from "expo-secure-store";
+
 import axios from "axios";
+import EXPO_API from "./url";
 
 export async function signIn(userData: UserSignIn): Promise<singInResponse> {
   const { data } = await axios.post(`${EXPO_API}/v1/user/login`, userData);
@@ -33,6 +35,27 @@ export async function signUp(
   const { data } = await axios.post(`${EXPO_API}/v1/user/register`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
+    },
+  });
+  return data;
+}
+
+export interface UserProfile {
+  user_id: string;
+  username: string;
+  fname: string;
+  lname: string;
+  gender: string;
+  profile_image_url: string;
+  wallet: string;
+}
+
+export async function getUserProfile(): Promise<UserProfile> {
+  const token = await SecureStore.getItem("token");
+  const { data } = await axios.get(`${EXPO_API}/v1/user/`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
   });
   return data;

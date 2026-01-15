@@ -1,26 +1,33 @@
-import React, { useState, useRef, useContext } from "react";
-import { Colors } from '@/constants/Colors';
 import { ThemedText } from "@/components/ThemedText";
-import { MaterialIcons } from '@expo/vector-icons';
-import { View, Image, StyleSheet, Pressable } from "react-native";
-import { Redirect, router } from "expo-router";
+import { Colors } from "@/constants/Colors";
 import { AuthContext } from "@/store/auth-context";
+import { MaterialIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import React, { useContext, useRef, useState } from "react";
+import { Image, Pressable, StyleSheet, View } from "react-native";
 
 type MenuBlockProps = {
   name: string;
   price: number;
   imageUrl: string;
   info: string;
-  tag1?: string;
-  tag2?: string;
+  status: string;
   count: number;
-  onCountChange: (menuName: string, newCount: number) => void;
+  onCountChange: (newCount: number) => void;
 };
 
-export function MenuBlock({ name, info, price, imageUrl, count, onCountChange }: MenuBlockProps) {
+export function MenuBlock({
+  name,
+  info,
+  price,
+  status,
+  imageUrl,
+  count,
+  onCountChange,
+}: MenuBlockProps) {
   const [isActive, setIsActive] = useState(false);
   const [isMinus, setIsMinus] = useState(false);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isDefaultActive = count > 0 && !isActive;
   const { isAuthenticated, logout, token } = useContext(AuthContext);
 
@@ -31,22 +38,24 @@ export function MenuBlock({ name, info, price, imageUrl, count, onCountChange }:
 
   const handleAddPress = () => {
     if (!isAuthenticated) {
-        return <Redirect href="/(auth)/login" />;
+      router.push("/(auth)/login");
+      return;
     }
+
     if (!isActive && count === 0) {
       // first click
       setIsActive(true);
-      onCountChange(name, 1); 
+      onCountChange(1);
       setIsMinus(false);
       resetTimeout();
     } else if (!isActive && count > 0) {
       // reopen row
       setIsActive(true);
-      setIsMinus(true);
+      setIsMinus(count > 1);
       resetTimeout();
     } else {
       // in row
-      onCountChange(name, count + 1);
+      onCountChange(count + 1);
       setIsMinus(true);
       resetTimeout();
     }
@@ -62,7 +71,7 @@ export function MenuBlock({ name, info, price, imageUrl, count, onCountChange }:
       setIsMinus(newCount > 1);
       resetTimeout();
     }
-    onCountChange(name, Math.max(newCount, 0));
+    onCountChange(Math.max(newCount, 0));
   };
 
   return (
@@ -71,15 +80,21 @@ export function MenuBlock({ name, info, price, imageUrl, count, onCountChange }:
 
       <View style={{ flex: 1 }}>
         <View style={styles.infoContainer}>
-          <ThemedText style={styles.name}>{name}</ThemedText>
+          <ThemedText type="defaultSemiBold" style={{ fontSize: 16 }}>
+            {name}
+          </ThemedText>
           <ThemedText>{info}</ThemedText>
           <ThemedText style={styles.price}>฿ {price}</ThemedText>
         </View>
 
-        <View style={{ position: 'absolute', right: 2, bottom: 2}}>
+        <View style={{ position: "absolute", right: 2, bottom: 2 }}>
           {!isActive && !isDefaultActive ? (
             <Pressable onPress={handleAddPress}>
-              <MaterialIcons name="add-circle" size={30} color={Colors.primary} />
+              <MaterialIcons
+                name="add-circle"
+                size={30}
+                color={Colors.primary}
+              />
             </Pressable>
           ) : !isActive && isDefaultActive ? (
             <Pressable onPress={handleAddPress}>
@@ -90,7 +105,11 @@ export function MenuBlock({ name, info, price, imageUrl, count, onCountChange }:
           ) : (
             <View style={styles.row}>
               <Pressable onPress={handleDeletePress}>
-                <MaterialIcons name={isMinus ? "remove" : "delete"} size={20} color={Colors.primary} />
+                <MaterialIcons
+                  name={isMinus ? "remove" : "delete"}
+                  size={20}
+                  color={Colors.primary}
+                />
               </Pressable>
               <View style={styles.countBox}>
                 <ThemedText style={styles.countText}>{count}</ThemedText>
@@ -102,6 +121,8 @@ export function MenuBlock({ name, info, price, imageUrl, count, onCountChange }:
           )}
         </View>
       </View>
+
+      {status == "unavailable" && <View style={styles.close}></View>}
     </View>
   );
 }
@@ -127,7 +148,7 @@ const styles = StyleSheet.create({
   infoContainer: {
     flex: 1,
     marginLeft: 12,
-    gap: 6
+    gap: 6,
   },
   name: {
     fontSize: 16,
@@ -166,5 +187,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: Colors.white,
+  },
+  close: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: 350,
+    height: 110,
+    borderRadius: 20,
+    backgroundColor: "rgba(195, 195, 195, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

@@ -1,46 +1,279 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  Canteen,
+  DropOff,
+  getCanteens,
+  getDropoffs,
+  getOrder,
+  getUser,
+  Order,
+} from "@/api/order";
+import { HorizontalTags } from "@/components/HorizontalTags";
+import { OrderCard } from "@/components/OrderInListCard";
+import { SearchBar } from "@/components/SearchBar";
+import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
+import { useOrderContext } from "@/store/order-context";
+import { MaterialIcons } from "@expo/vector-icons"; // นำเข้า Material Icons
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+  LayoutAnimation,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  UIManager,
+  View,
+} from "react-native";
 
-export default function Index() {
-    const insets = useSafeAreaInsets();
-    const router = useRouter();
-    
+if (
+  Platform.OS === "android" &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
+export default function SearchOrderPage() {
+  const router = useRouter();
+
+  const [searchText, setSearchText] = useState("");
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [canteens, setCanteens] = useState<Canteen[]>([]);
+  const [dropoffs, setDropoffs] = useState<DropOff[]>([]);
+  const [expanded, setExpanded] = useState<string | null>(null);
+
+  const [selectedCanteen, setSelectedCanteen] = useState<string | null>(null);
+  const [selectedDropoff, setSelectedDropoff] = useState<string | null>(null);
+
+  const [loading, setLoading] = useState(true);
+
+  const { acceptedOrders } = useOrderContext();
+  const [availableOrder, setAvailableOrder] = useState<number>(0);
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const fetchAll = async () => {
+      setLoading(true);
+      try {
+        const [orderRes, canteenRes, dropoffRes, userRes] = await Promise.all([
+          getOrder(),
+          getCanteens(),
+          getDropoffs(),
+          getUser(),
+        ]);
+        setOrders(orderRes);
+        setCanteens(canteenRes);
+        setDropoffs(dropoffRes);
+        setAvailableOrder(userRes.available_order ?? 0);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAll();
+  }, []);
+
+  const toggleExpand = (id: string) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpanded(expanded === id ? null : id);
+  };
+
+  // ✅ Filtering logic
+  const filteredOrders = orders.filter((order) => {
+    const matchSearch =
+      order.shop_name.toLowerCase().includes(searchText.toLowerCase()) ||
+      order.canteen_name.toLowerCase().includes(searchText.toLowerCase());
+    const matchCanteen = selectedCanteen
+      ? order.canteen_name === selectedCanteen
+      : true;
+    const matchDropoff = selectedDropoff
+      ? order.drop_off_location_id === selectedDropoff
+      : true;
+    return matchSearch && matchCanteen && matchDropoff;
+  });
+
+  if (loading) {
     return (
-        <View style={[styles.container, { paddingBottom: 60 + insets.bottom }]}>
-            <Text style={styles.title}>Order</Text>
-
-            <Pressable onPress={() => {router.push("/(pages)/orderDetail");}}>
-                <ThemedText style={styles.button}>Order 1</ThemedText>
-            </Pressable>
-
-            <Pressable onPress={() => {router.push("/(pages)/confirmOrder");}}>
-                <ThemedText style={styles.button}>start deliver</ThemedText>
-            </Pressable>
-            
-        </View>
+      <View style={styles.center}>
+        <ThemedText>Loading...</ThemedText>
+      </View>
     );
+  }
+
+  const handleClose = () => {
+    setVisible(false);
+  };
+
+  const isAcceptedGreaterThanAvailable = acceptedOrders.length > availableOrder;
+
+  return (
+    <LinearGradient
+      colors={Colors.bg}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      style={{ flex: 1 }}
+    >
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.container}
+      >
+        {/* 🔍 Search Bar */}
+        <View style={styles.searchContainer}>
+          <SearchBar
+            placeholder="Search Store or Canteen"
+            value={searchText}
+            onChangeText={setSearchText}
+            style={{ marginBottom: 20 }}
+          />
+        </View>
+
+        {/* 🏫 จุดรับอาหาร */}
+        <ThemedText style={styles.sectionTitle}>จุดรับอาหาร</ThemedText>
+        <HorizontalTags
+          tags={canteens.map((c) => c.CanteenName)}
+          selectedTag={selectedCanteen}
+          onPressTag={(tag) =>
+            setSelectedCanteen(selectedCanteen === tag ? null : tag)
+          }
+        />
+
+        {/* 📍 จุดส่งอาหาร */}
+        <ThemedText style={[styles.sectionTitle, { marginTop: 10 }]}>
+          จุดส่งอาหาร
+        </ThemedText>
+        <HorizontalTags
+          tags={dropoffs.map((d) => d.name)}
+          selectedTag={
+            dropoffs.find((d) => d.dropoff_id === selectedDropoff)?.name ?? null
+          }
+          onPressTag={(tag) => {
+            const drop = dropoffs.find((d) => d.name === tag);
+            if (drop) {
+              setSelectedDropoff(
+                selectedDropoff === drop.dropoff_id ? null : drop.dropoff_id
+              );
+            }
+          }}
+        />
+
+        {/* 📦 ผลลัพธ์ */}
+        <ThemedText style={[styles.sectionTitle, { marginTop: 30 }]}>
+          ผลลัพธ์ ({filteredOrders.length})
+        </ThemedText>
+
+        {filteredOrders.length > 0 ? (
+          filteredOrders.map((order) => (
+            <OrderCard
+              key={order.order_id}
+              order={order}
+              isExpanded={expanded === order.order_id}
+              onToggle={() => toggleExpand(order.order_id)}
+            />
+          ))
+        ) : (
+          <View style={{ alignItems: "center", marginTop: 20 }}>
+            <ThemedText>ไม่พบออเดอร์ที่ตรงกับเงื่อนไข</ThemedText>
+          </View>
+        )}
+
+        <View style={{ height: 80 }} />
+      </ScrollView>
+
+      {visible && (
+        <View style={styles.iconcontainer}>
+          <View style={styles.circle}>
+            <MaterialIcons name="delivery-dining" size={40} color="white" />
+            <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+              <ThemedText style={styles.closeText}>X</ThemedText>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.numberContainer}>
+            <ThemedText
+              style={[
+                styles.number,
+                isAcceptedGreaterThanAvailable ? { color: "red" } : {},
+              ]}
+            >
+              {acceptedOrders.length} / {availableOrder}
+            </ThemedText>
+          </View>
+        </View>
+      )}
+
+      {acceptedOrders.length > 0 && (
+        <View style={styles.confirmButton}>
+          <ThemedButton
+            title={"เริ่มการจัดส่ง"}
+            variant="primary"
+            onPress={() => router.push("/(tabs)/order/confirmOrder")}
+          />
+        </View>
+      )}
+    </LinearGradient>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: "bold",
-    },
-    button: {
-        // color: Colors.white,
-        borderColor: Colors.primary,
-        borderWidth: 1,
-        borderRadius: 10,
-        paddingVertical: 4,
-        paddingHorizontal: 6,
-        marginTop: 10
-    }
+  container: { padding: 20, paddingBottom: 100 },
+  searchContainer: {
+    marginTop: 20,
+    alignItems: "center",
+  },
+  center: { flex: 1, alignItems: "center", justifyContent: "center" },
+  sectionTitle: { fontWeight: "600", marginBottom: 8, color: "#3FA268" },
+  confirmButton: {
+    marginTop: 20,
+    alignItems: "center",
+    marginVertical: 30,
+    position: "absolute",
+    left: 30,
+    bottom: 80,
+  },
+  iconcontainer: {
+    position: "absolute",
+    bottom: 250,
+    right: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 10,
+  },
+  circle: {
+    backgroundColor: "#7EC850",
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+  },
+  closeButton: {
+    position: "absolute",
+    top: -10,
+    right: -10,
+    backgroundColor: "#2720204e",
+    borderRadius: 20,
+    width: 20,
+    height: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  closeText: {
+    fontSize: 16,
+    color: "white",
+  },
+  numberContainer: {
+    backgroundColor: "#7EC850",
+    paddingVertical: 5,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    marginTop: 4,
+  },
+  number: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
+  },
 });
