@@ -1,0 +1,368 @@
+import axios from "axios";
+import * as SecureStore from "expo-secure-store";
+import { getMenubyId, Menu } from "./store";
+import EXPO_API from "./url";
+
+export interface User {
+  user_id: string;
+  username: string;
+  fname: string;
+  lname: string;
+  gender: string;
+  profile_image_url: string;
+  wallet: number;
+  available_order: number; 
+}
+
+export interface menu_quantity {
+  menu_id: string;
+  quantity: number;
+}
+
+export interface Order {
+  order_id: string;
+  user_order_id: string;
+  user_delivery_id: string;
+  status: string;
+  order_date: string;
+  delivery_method: string;
+  appointment_time: string;
+  drop_off_location_id: string;
+  menu_quantity: menu_quantity[];
+  amount: number;
+  shop_name: string;
+  canteen_name: string;
+  shipping_fee: number;
+  confirmation_image_url: string;
+}
+
+export async function getOrder(): Promise<Order[]> {
+  const { data } = await axios.get(`${EXPO_API}/v1/order/available`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${SecureStore.getItem("token")}`,
+    },
+  });
+  return data;
+}
+
+export async function getOrderbyId(orderId: string): Promise<
+  Order & {
+    User?: User;
+    menus: { name: string; detail: string; price: number; quantity: number }[];
+    totalQuantity: number;
+    dropOffLocation?: DropOff;
+  }
+> {
+  const token = await SecureStore.getItem("token");
+  const { data } = await axios.get(`${EXPO_API}/v1/order/${orderId}`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  let user: User | undefined;
+  try {
+    user = await getUserbyId(data.user_order_id);
+  } catch (err) {
+    console.error("Fetch user failed:", err);
+  }
+
+  const menus = await Promise.all(
+    (data.menu_quantity ?? []).map(async (item: any) => {
+      try {
+        const menuData: Menu = await getMenubyId(item.menu_id);
+        return {
+          name: menuData.name,
+          detail: menuData.detail,
+          price: menuData.price,
+          quantity: item.quantity,
+        };
+      } catch (menuErr) {
+        console.error("Fetch menu failed:", menuErr);
+        return {
+          name: "Unknown",
+          detail: "",
+          price: 0,
+          quantity: item.quantity,
+        };
+      }
+    })
+  );
+
+  const totalQuantity = menus.reduce((sum, m) => sum + (m.quantity ?? 0), 0);
+
+  let dropOffLocation: DropOff | undefined;
+  try {
+    if (data.drop_off_location_id) {
+      dropOffLocation = await getDropOffbyId(data.drop_off_location_id);
+    }
+  } catch (err) {
+    console.error("Fetch drop-off location failed:", err);
+  }
+
+  return { ...data, User: user, menus, totalQuantity, dropOffLocation };
+}
+
+export async function getUserbyId(UserId: string): Promise<User> {
+  const token = await SecureStore.getItem("token");
+  const { data } = await axios.get(`${EXPO_API}/v1/user/${UserId}`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return data;
+}
+
+export async function createOrder(
+  dropOffLocationId: string,
+  appointmentTime: Date,
+  menu_quantity: menu_quantity[]
+) {
+  const token = await SecureStore.getItemAsync("token");
+  const payload = {
+    menu: menu_quantity,
+    dropoff_location: dropOffLocationId,
+    appointment_time: appointmentTime.toISOString(),
+    delivery_method: "handtohand",
+  };
+  const { data } = await axios.post(`${EXPO_API}/v1/order`, payload, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return data;
+}
+
+export interface OrderbyId {
+  order_id: string;
+  user_order_id: string;
+  user_delivery_id: string;
+  status: string;
+  order_date: string;
+  delivery_method: string;
+  confirmation_image_url: string;
+  appointment_time: string;
+  drop_off_location_id: string;
+  menu_quantity: menu_quantity[];
+  amount: number;
+  shop_name: string;
+  canteen_name: string;
+  shipping_fee: number;
+}
+
+export interface DropOff {
+  name: string;
+  detail: string;
+}
+
+export async function getMyDelivery(): Promise<(Order & { User?: User })[]> {
+  const token = await SecureStore.getItem("token");
+
+  const { data } = await axios.get(`${EXPO_API}/v1/order/delivery`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const orders: Order[] = data;
+
+  const results = await Promise.all(
+    orders.map(async (order) => {
+      try {
+        const user = await getUserbyId(order.user_order_id);
+        return { ...order, User: user };
+      } catch (err) {
+        console.error(`Fetch user failed for ${order.user_order_id}:`, err);
+        return { ...order, User: undefined, OrderbyId: undefined };
+      }
+    })
+  );
+
+  return results;
+}
+
+export async function getMyOrder(): Promise<(Order & { User?: User })[]> {
+  const token = await SecureStore.getItem("token");
+
+  const { data } = await axios.get(`${EXPO_API}/v1/order/`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const orders: Order[] = data;
+
+  const results = await Promise.all(
+    (orders || []).map(async (order) => {
+      let user: User | undefined;
+      if (order.user_delivery_id) {
+        try {
+          user = await getUserbyId(order.user_delivery_id);
+        } catch (err) {
+          console.error(
+            `Fetch user failed for delivery ID ${order.user_delivery_id}:`,
+            err
+          );
+        }
+      }
+      return { ...order, User: user };
+    })
+  );
+
+  return results;
+}
+
+export async function getDropOffbyId(dropOffId: string): Promise<DropOff> {
+  const token = await SecureStore.getItem("token");
+  const { data } = await axios.get(`${EXPO_API}/v1/dropOff/${dropOffId}`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return data;
+}
+
+export async function acceptOrderbyRider(orderId: string): Promise<any> {
+  try {
+    const token = await SecureStore.getItemAsync("token");
+    const formData = new FormData();
+    formData.append("order_id", orderId);
+
+    const { data } = await axios.post(
+      `${EXPO_API}/v1/order/accept/`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return data;
+  } catch (error) {
+    console.error("Failed to accept order:", error);
+    throw error;
+  }
+}
+
+export async function confirmOrderbyRider(
+  orderId: string,
+  imageUri: string
+): Promise<any> {
+  const token = await SecureStore.getItemAsync("token");
+  const formData = new FormData();
+
+  formData.append("order_id", orderId);
+  if (imageUri) {
+    const filename = imageUri.split("/").pop() || "photo.jpg";
+    const match = /\.([a-zA-Z0-9]+)$/.exec(filename);
+    const type = match ? `image/${match[1]}` : `image`;
+    formData.append("image", {
+      uri: imageUri,
+      name: filename,
+      type,
+    } as any);
+  }
+  const { data } = await axios.post(`${EXPO_API}/v1/order/confirm`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return data;
+}
+
+//Som
+export async function getUser(): Promise<User> {
+  const token = await SecureStore.getItem("token");
+  const { data } = await axios.get(`${EXPO_API}/v1/user/`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return data; // data คือ user object เดียว
+}
+
+export interface Canteen {
+  CanteenName: string;
+  Latitude: string;
+  Longitude: string;
+}
+
+export interface DropOff {
+  dropoff_id: string;
+  name: string;
+  detail: string;
+  image_url: string;
+  latitude: string;
+  longitude: string;
+}
+
+export async function getCanteens(): Promise<Canteen[]> {
+  const token = await SecureStore.getItem("token");
+  const { data } = await axios.get(`${EXPO_API}/v1/canteens`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return data.canteens;
+}
+
+export async function getDropoffs(): Promise<DropOff[]> {
+  const token = await SecureStore.getItem("token");
+  const { data } = await axios.get(`${EXPO_API}/v1/dropOff/`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return data;
+}
+export interface Noti {
+  notification_id: string;
+  order_id: string;
+  receiver_id: string;
+  topic: string;
+  message: string;
+  time_stamp: string;
+}
+export async function getNoti(userId: string): Promise<Noti[]> {
+  const token = await SecureStore.getItem("token");
+  const { data } = await axios.get(
+    `${EXPO_API}/v1/order/notifications/${userId}`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return data;
+}
+
+export async function finishTransaction(orderId: string): Promise<any> {
+  const token = await SecureStore.getItem("token");
+  const { data } = await axios.post(
+    `${EXPO_API}/v1/order/transaction_log/`,
+    {
+      order_id: orderId,
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return data;
+}

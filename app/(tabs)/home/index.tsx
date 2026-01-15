@@ -1,4 +1,4 @@
-import { getStore, Store } from "@/api/store";
+import { getPopularStore, getStore, Stores } from "@/api/store";
 import { SearchBar } from "@/components/SearchBar";
 import { StoreBlock } from "@/components/StoreBlock";
 import { ThemedText } from "@/components/ThemedText";
@@ -32,26 +32,29 @@ export default function Index() {
     return url.replace("/render/image/", "/object/");
   };
 
-  const renderStore: ListRenderItem<Store> = ({ item }) => {
+  const renderStore: ListRenderItem<Stores> = ({ item }) => {
+    console.log(item.shop_image_url);
     const imageSource =
-      item.ImageURL && item.ImageURL.trim() !== ""
-        ? { uri: fixSupabaseUrl(item.ImageURL) }
+      item.shop_image_url && item.shop_image_url.trim() !== ""
+        ? { uri: fixSupabaseUrl(item.shop_image_url) }
         : default_image;
     return (
       <StoreBlock
-        state={item.State}
+        storeId={item.shop_id}
+        state={item.state}
         image={imageSource}
-        name={item.Name}
-        canteen={item.CanteenName}
+        name={item.name}
+        canteen={item.canteen_name}
       />
     );
   };
 
-  const recommendRef = useRef<FlatList<Store>>(null);
-  const forYouRef = useRef<FlatList<Store>>(null);
+  const recommendRef = useRef<FlatList<Stores>>(null);
+  const forYouRef = useRef<FlatList<Stores>>(null);
   const [recommendOffset, setRecommendOffset] = useState(0);
   const [forYouOffset, setForYouOffset] = useState(0);
-  const [stores, setStores] = useState<Store[]>([]);
+  const [stores, setStores] = useState<Stores[]>([]);
+  const [storesPopular, setStoresPopular] = useState<Stores[]>([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -59,6 +62,20 @@ export default function Index() {
       try {
         const response = await getStore();
         setStores(response);
+        console.log("Stores:", response);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await getPopularStore();
+        setStoresPopular(response);
+        console.log("Popular Stores:", response);
       } catch (err) {
         console.error(err);
       }
@@ -93,7 +110,7 @@ export default function Index() {
       style={{ flex: 1 }}
     >
       <SafeAreaView style={{ flex: 1, paddingBottom: 60 + insets.bottom }}>
-        <View style={{ paddingVertical: 30 }}>
+        <View style={{ paddingBottom: 30 }}>
           {/* header */}
           <View style={styles.headerRow}>
             <Text style={styles.brand}>HewHew</Text>
@@ -200,7 +217,7 @@ export default function Index() {
           {stores && (
             <FlatList
               ref={forYouRef}
-              data={stores}
+              data={storesPopular}
               renderItem={renderStore}
               keyExtractor={(_, index) => index.toString()}
               horizontal
@@ -300,9 +317,9 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   cartButton: {
-    position: "absolute",
-    right: 31,
-    bottom: 5,
+    position: "fixed",
+    left: 340,
+    bottom: 0,
     backgroundColor: Colors.primary,
     width: 50,
     height: 50,

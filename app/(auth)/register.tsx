@@ -17,6 +17,7 @@ import {
   View,
 } from "react-native";
 import { UserSignUp } from "../../types/user";
+
 export default function Register() {
   const [userInput, setUserInput] = useState<UserSignUp>({
     username: "",
@@ -197,7 +198,13 @@ export default function Register() {
               marginTop: 20,
             }}
           >
-            <Text style={{ textAlign: "center", alignItems: "center" }}>
+            <Text
+              style={{
+                textAlign: "center",
+                alignItems: "center",
+                fontFamily: "Prompt_400Regular",
+              }}
+            >
               Already have an account?{" "}
             </Text>
             <Pressable
@@ -208,7 +215,11 @@ export default function Register() {
               }}
               onPress={() => router.replace("/(auth)/register")}
             >
-              <Text style={{ color: "#0A6847" }}>Sign in here</Text>
+              <Text
+                style={{ color: "#0A6847", fontFamily: "Prompt_400Regular" }}
+              >
+                Sign in here
+              </Text>
             </Pressable>
           </View>
         </View>
@@ -244,6 +255,7 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 16,
     fontWeight: "bold",
+    fontFamily: "Prompt_600SemiBold",
   },
   pictureContainer: {
     alignItems: "center",
@@ -287,6 +299,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     fontSize: 14,
     overflow: "hidden",
+    fontFamily: "Prompt_500Medium",
   },
 
   inputContainer: {
@@ -296,6 +309,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     marginBottom: 5,
+    fontFamily: "Prompt_400Regular",
   },
   input: {
     width: "100%",
@@ -306,6 +320,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     fontSize: 16,
     backgroundColor: "white",
+    fontFamily: "Prompt_400Regular",
   },
   buttonContainer: {
     // position: "absolute",

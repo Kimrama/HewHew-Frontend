@@ -1,4 +1,4 @@
-import { getStore, Store } from "@/api/store";
+import { getStore, Stores } from "@/api/store";
 import { CanteenList } from "@/components/CanteenList";
 import { SearchBar } from "@/components/SearchBar";
 import { StoreBlock } from "@/components/StoreBlock";
@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
 export default function Search() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCanteen, setSelectedCanteen] = useState<string | null>(null);
-  const [stores, setStores] = useState<Store[]>([]);
+  const [stores, setStores] = useState<Stores[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,18 +49,19 @@ export default function Search() {
     fetchData();
   }, []);
 
-  const renderStore: ListRenderItem<Store> = ({ item }) => {
+  const renderStore: ListRenderItem<Stores> = ({ item }) => {
     const imageSource =
-      item.ImageURL && item.ImageURL.trim() !== ""
-        ? { uri: item.ImageURL }
+      item.shopimage_url && item.shopimage_url.trim() !== ""
+        ? { uri: item.shopimage_url }
         : default_image;
 
     return (
       <StoreBlock
-        state={item.State}
+        storeId={item.shop_id}
+        state={item.state}
         image={imageSource}
-        name={item.Name}
-        canteen={item.CanteenName}
+        name={item.name}
+        canteen={item.canteen_name}
         widthSize={165}
         heightSize={130}
       />
@@ -70,11 +71,11 @@ export default function Search() {
   const filteredStores = stores.filter((store) => {
     const matchesSearch =
       searchQuery === "" ||
-      store.Name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      store.CanteenName.toLowerCase().includes(searchQuery.toLowerCase()); //||
+      store.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      store.canteen_name.toLowerCase().includes(searchQuery.toLowerCase()); //||
 
     const matchesCanteen =
-      !selectedCanteen || store.CanteenName === selectedCanteen;
+      !selectedCanteen || store.canteen_name === selectedCanteen;
 
     return matchesSearch && matchesCanteen;
   });
@@ -89,7 +90,7 @@ export default function Search() {
       <SafeAreaView style={{ flex: 1 }}>
         <View>
           <ScrollView
-            style={{ paddingTop: 50, paddingBottom: 30, paddingLeft: 30 }}
+            style={{ paddingTop : 30, paddingBottom: 30, paddingLeft: 30 }}
           >
             {/* search bar */}
             <View style={styles.RowSpBw}>
@@ -125,7 +126,7 @@ export default function Search() {
               style={{ width: width }}
               data={filteredStores}
               renderItem={renderStore}
-              keyExtractor={(item, index) => item.Name + index}
+              keyExtractor={(item, index) => item.name + index}
               numColumns={2}
               columnWrapperStyle={{
                 justifyContent: "space-between",
@@ -134,6 +135,7 @@ export default function Search() {
               scrollEnabled={false}
               showsVerticalScrollIndicator={false}
               ListFooterComponent={<View style={{ marginBottom: 100 }} />}
+
               // ถ้าไม่มีผลลัพธ์ที่ตรง
               ListEmptyComponent={
                 <View style={{ alignItems: "center", marginTop: 20 }}>
@@ -141,13 +143,10 @@ export default function Search() {
                     source={require("@/assets/images/searchStoreNotFound.png")}
                     style={{ width: 160, height: 160 }}
                   />
-                  <ThemedText type="subtitle" style={{ marginTop: 20 }}>
-                    No results found
-                  </ThemedText>
+                  <ThemedText type="subtitle" style={{ marginTop: 20 }}>ไม่พบผลลัพธ์</ThemedText>
                   <ThemedText
                     style={{ marginTop: 10, color: Colors.gray1 }}
-                  >{`Try checking your spelling or
-searching for something else.`}</ThemedText>
+                  >{`ลองตรวจสอบคำที่พิมพ์หรือลองค้นหาคำอื่นดู`}</ThemedText>
                 </View>
               }
             />
